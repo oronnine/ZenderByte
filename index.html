@@ -4,14 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZenderByte | AI Search</title>
-    <meta name="description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Web Access" />
+    <meta name="description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Incognito Web Access" />
     <meta property="og:title" content="ZenderByte | AI Search" />
-    <meta property="og:description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Web Access" />
+    <meta property="og:description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Incognito Web Access" />
     <meta property="og:type" content="website" />
 
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 
     <style>
+        html {
+            overflow-x: hidden;
+        }
+
         body {
             background: #050505;
             color: #e5e7eb;
@@ -31,17 +35,24 @@
         .panel {
             position: fixed;
             top: 0;
-            right: -550px;
+            right: -600px;
             width: min(460px, calc(100vw - 4.5rem));
             height: 100%;
             height: 100dvh;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.4s;
             z-index: 45;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+            box-shadow: none !important;
+            visibility: hidden;
+            pointer-events: none;
+            opacity: 0;
         }
 
         .panel.active {
             right: 4rem;
+            visibility: visible;
+            pointer-events: auto;
+            opacity: 1;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.6) !important;
         }
 
         /* Responsive Mobile Layout (Preserves Desktop Exactly) */
@@ -52,13 +63,20 @@
                 height: calc(100% - 4rem);
                 height: calc(100dvh - 4rem);
                 width: 100%;
-                right: -100%;
-                box-shadow: 0 -10px 30px rgba(0,0,0,0.7);
+                right: calc(-100% - 100px);
+                box-shadow: none !important;
                 padding: 1.25rem !important;
+                visibility: hidden;
+                pointer-events: none;
+                opacity: 0;
             }
 
             .panel.active {
                 right: 0;
+                visibility: visible;
+                pointer-events: auto;
+                opacity: 1;
+                box-shadow: 0 -10px 30px rgba(0,0,0,0.7) !important;
             }
         }
 
@@ -130,8 +148,16 @@
         </button>
 
         <!-- Advanced Search -->
-        <button data-panel-btn="adv-panel" onclick="togglePanel('adv-panel')" class="p-3 rounded-xl hover:bg-yellow-600/20 transition-all" title="Advanced Search">
-            <svg class="w-6 h-6 md:w-7 md:h-7 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+        <button data-panel-btn="adv-panel" onclick="togglePanel('adv-panel')" class="p-3 rounded-xl hover:bg-yellow-600/20 transition-all text-yellow-500" title="Advanced Search">
+            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+        </button>
+
+        <!-- Settings Toggle -->
+        <button data-panel-btn="settings-panel" onclick="togglePanel('settings-panel')" class="p-3 rounded-xl hover:bg-purple-600/20 transition-all text-gray-400 hover:text-purple-400" title="Settings & AI Engines">
+            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
         </button>
     </div>
 
@@ -158,18 +184,35 @@
         </div>
     </main>
 
-    <!-- OLLAMA AI PANEL -->
-    <div id="ai-panel" class="panel glass p-8 flex flex-col">
-        <div class="flex items-center justify-between mb-6">
-            <h2 class="text-2xl font-bold flex items-center gap-3">
-                <span class="w-3 h-3 bg-blue-500 rounded-full animate-ping"></span>
-                Ollama Intelligence
+    <!-- AI PANEL (MULTI-ENGINE: OLLAMA / GEMINI / CLAUDE / CHATGPT) -->
+    <div id="ai-panel" class="panel glass p-6 sm:p-8 flex flex-col">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 sm:gap-3">
+                <span id="aiActivePing" class="w-3 h-3 bg-blue-500 rounded-full animate-ping"></span>
+                <span id="aiHeaderTitle">Ollama Intelligence</span>
             </h2>
             <button onclick="togglePanel('ai-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
         </div>
 
-        <div class="space-y-4 mb-6">
-            <div>
+        <!-- Provider Status & Switcher Bar -->
+        <div class="flex items-center justify-between p-2.5 bg-white/5 border border-white/10 rounded-xl mb-4 text-xs">
+            <div class="flex items-center gap-2 min-w-0">
+                <span id="aiProviderEmoji" class="text-base shrink-0">🦙</span>
+                <span class="text-gray-400 shrink-0">Engine:</span>
+                <span id="aiProviderLabel" class="font-bold text-white truncate">Ollama</span>
+                <span id="aiProviderBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono shrink-0">11434</span>
+            </div>
+            <button onclick="togglePanel('settings-panel')" class="shrink-0 ml-2 px-2.5 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 rounded-lg flex items-center gap-1 font-medium transition-all" title="Configure AI & Keys in Settings">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <span>Settings</span>
+            </button>
+        </div>
+
+        <div id="aiEngineOptionsContainer" class="space-y-4 mb-4">
+            <div id="ollamaSliderBox">
                 <div class="flex justify-between items-center mb-2">
                     <label class="text-xs uppercase text-gray-400 font-bold">Available Models</label>
                     <span class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">Local + Cloud</span>
@@ -178,15 +221,25 @@
                 <div id="modelNameDisplay" class="mt-2 text-center p-2 bg-white/5 rounded font-mono text-sm">Loading Models...</div>
             </div>
 
-            <div>
+            <div id="ollamaEndpointBox">
                 <label class="text-xs uppercase text-gray-500 font-bold mb-2 block">Endpoint URL</label>
                 <input type="text" id="ollamaUrl" value="http://localhost:11434/api/generate" class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono">
+            </div>
+
+            <div id="cloudModelBox" class="hidden p-3 rounded-xl bg-white/5 border border-white/10 text-xs flex items-center justify-between">
+                <div>
+                    <span class="text-gray-400">Selected Model:</span>
+                    <span id="cloudModelName" class="font-bold text-white ml-1 font-mono">gemini-2.5-flash</span>
+                </div>
+                <button onclick="togglePanel('settings-panel')" class="text-blue-400 hover:underline">Change Model</button>
             </div>
         </div>
 
         <div id="chatBox" class="flex-grow overflow-y-auto space-y-4 mb-4 pr-2">
-            <div class="text-sm text-gray-400 italic">System: Please ensure Ollama is running through the following command:</div>
-            <input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono" readonly>
+            <div id="ollamaHintBox" class="space-y-2">
+                <div class="text-sm text-gray-400 italic">System: Please ensure Ollama is running through the following command:</div>
+                <input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono" readonly>
+            </div>
             <div class="text-xs text-blue-400/80 bg-blue-950/20 border border-blue-500/20 p-2.5 rounded-lg flex items-center gap-2">
                 <span>🌐</span>
                 <span><b>Incognito Web Access:</b> Real-time search, verified articles, and direct website navigation with zero referrer leakage.</span>
@@ -194,7 +247,7 @@
         </div>
 
         <div class="flex gap-2">
-            <input type="text" id="aiMsg" placeholder="Ask AI, open a website, or search an article..." class="flex-grow bg-white/5 border border-white/10 p-3 rounded-xl outline-none focus:border-blue-500">
+            <input type="text" id="aiMsg" placeholder="Ask AI to open a website or an article." class="flex-grow bg-white/5 border border-white/10 p-3 rounded-xl outline-none focus:border-blue-500 text-sm">
             <button id="aiSendBtn" onclick="sendToOllama()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-xl font-bold transition-all flex items-center justify-center min-w-[80px]">
                 <span>Send</span>
             </button>
@@ -245,6 +298,231 @@
                 <input type="text" id="adv-site" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg" placeholder="e.g. stackoverflow.com">
             </div>
             <button onclick="runAdvancedSearch()" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black mt-4 hover:bg-yellow-500 transition-all">Execute Power Search</button>
+        </div>
+    </div>
+
+    <!-- SETTINGS & AI CONFIGURATION PANEL -->
+    <div id="settings-panel" class="panel glass p-6 sm:p-8 flex flex-col overflow-y-auto">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
+            <div>
+                <h2 class="text-2xl font-bold flex items-center gap-2.5 text-white">
+                    <svg class="w-6 h-6 text-purple-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Settings
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">Configure AI engine, ports &amp; API keys</p>
+            </div>
+            <button onclick="togglePanel('settings-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+        </div>
+
+        <div class="space-y-6 pb-12">
+            <!-- 1. AI PROVIDER SELECTOR (4 CHOICES) -->
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <label class="text-xs uppercase text-gray-400 font-bold tracking-wider">Select AI Provider</label>
+                    <span id="savedIndicator" class="text-[11px] text-emerald-400 hidden font-mono">✓ Saved</span>
+                </div>
+                <div class="grid grid-cols-2 gap-2.5">
+                    <!-- Ollama (Default) -->
+                    <button type="button" onclick="selectAIProvider('ollama')" id="prov-btn-ollama" class="ai-prov-btn relative p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left flex flex-col justify-between">
+                        <div class="flex items-center justify-between w-full mb-1">
+                            <span class="text-xl">🦙</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-bold uppercase">Default</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Ollama</div>
+                            <div class="text-[11px] text-gray-400">Local / Self-hosted</div>
+                        </div>
+                        <div class="check-icon hidden absolute top-2 right-2 text-blue-400">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        </div>
+                    </button>
+
+                    <!-- Google Gemini -->
+                    <button type="button" onclick="selectAIProvider('gemini')" id="prov-btn-gemini" class="ai-prov-btn relative p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left flex flex-col justify-between">
+                        <div class="flex items-center justify-between w-full mb-1">
+                            <span class="text-xl">✨</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold uppercase">Cloud</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Gemini</div>
+                            <div class="text-[11px] text-gray-400">Google AI Studio</div>
+                        </div>
+                        <div class="check-icon hidden absolute top-2 right-2 text-emerald-400">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        </div>
+                    </button>
+
+                    <!-- Claude (Anthropic) -->
+                    <button type="button" onclick="selectAIProvider('claude')" id="prov-btn-claude" class="ai-prov-btn relative p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left flex flex-col justify-between">
+                        <div class="flex items-center justify-between w-full mb-1">
+                            <span class="text-xl">🧠</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold uppercase">Anthropic</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">Claude</div>
+                            <div class="text-[11px] text-gray-400">Sonnet &amp; Haiku</div>
+                        </div>
+                        <div class="check-icon hidden absolute top-2 right-2 text-amber-400">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        </div>
+                    </button>
+
+                    <!-- OpenAI ChatGPT -->
+                    <button type="button" onclick="selectAIProvider('openai')" id="prov-btn-openai" class="ai-prov-btn relative p-3 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all text-left flex flex-col justify-between">
+                        <div class="flex items-center justify-between w-full mb-1">
+                            <span class="text-xl">⚡</span>
+                            <span class="text-[9px] px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 font-bold uppercase">OpenAI</span>
+                        </div>
+                        <div>
+                            <div class="font-bold text-sm text-white">ChatGPT</div>
+                            <div class="text-[11px] text-gray-400">GPT-4o &amp; Mini</div>
+                        </div>
+                        <div class="check-icon hidden absolute top-2 right-2 text-green-400">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                        </div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 2. OLLAMA CONFIGURATION BOX -->
+            <div id="cfg-box-ollama" class="provider-config-box space-y-4 p-4 rounded-2xl bg-black/40 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-blue-400 flex items-center gap-1.5">
+                        <span>🦙</span> Ollama Port &amp; Host
+                    </span>
+                    <button type="button" onclick="testOllamaConnection()" id="btnTestOllama" class="text-xs px-2.5 py-1 rounded bg-blue-600/30 hover:bg-blue-600/50 text-blue-200 transition-all">
+                        Test Connection
+                    </button>
+                </div>
+                <div id="ollamaTestStatus" class="hidden text-xs p-2.5 rounded-lg font-mono"></div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">Ollama Port</label>
+                    <div class="flex items-center gap-2">
+                        <input type="text" id="cfg-ollama-port" value="11434" oninput="onOllamaPortChange()" placeholder="11434" class="w-28 bg-white/5 border border-white/10 p-2.5 rounded-xl text-xs font-mono">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <button type="button" onclick="setOllamaPortPreset('11434')" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded text-[11px] font-mono">11434 (Default)</button>
+                            <button type="button" onclick="setOllamaPortPreset('8080')" class="px-2 py-1 bg-white/10 hover:bg-white/20 rounded text-[11px] font-mono">8080</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">Full Endpoint URL</label>
+                    <input type="text" id="cfg-ollama-host" value="http://localhost:11434" oninput="onOllamaHostChange()" class="w-full bg-white/5 border border-white/10 p-2.5 rounded-xl text-xs font-mono">
+                    <p class="text-[11px] text-gray-400">On mobile devices, replace <code class="text-gray-300">localhost</code> with your PC's Wi-Fi IP (e.g. <code class="text-gray-300">http://192.168.1.100:11434</code>).</p>
+                </div>
+            </div>
+
+            <!-- 3. GOOGLE GEMINI CONFIGURATION BOX -->
+            <div id="cfg-box-gemini" class="provider-config-box space-y-4 p-4 rounded-2xl bg-black/40 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-emerald-400 flex items-center gap-1.5">
+                        <span>✨</span> Google Gemini Settings
+                    </span>
+                    <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="text-xs text-emerald-300 hover:underline flex items-center gap-1">
+                        <span>Get Free Key</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">Google Gemini API Key</label>
+                    <div class="relative">
+                        <input type="password" id="cfg-gemini-key" placeholder="AIzaSy..." class="w-full bg-white/5 border border-white/10 p-2.5 pr-10 rounded-xl text-xs font-mono">
+                        <button type="button" onclick="togglePasswordVisibility('cfg-gemini-key', this)" class="absolute right-2 top-2 text-gray-400 hover:text-white p-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">Gemini Model</label>
+                    <select id="cfg-gemini-model" class="w-full bg-black/80 border border-white/10 p-2.5 rounded-xl text-xs text-white">
+                        <option value="gemini-2.5-flash">Gemini 2.5 Flash (Recommended / Fast)</option>
+                        <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                        <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 4. CLAUDE (ANTHROPIC) CONFIGURATION BOX -->
+            <div id="cfg-box-claude" class="provider-config-box space-y-4 p-4 rounded-2xl bg-black/40 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-amber-400 flex items-center gap-1.5">
+                        <span>🧠</span> Anthropic Claude Settings
+                    </span>
+                    <a href="https://console.anthropic.com/" target="_blank" rel="noopener noreferrer" class="text-xs text-amber-300 hover:underline flex items-center gap-1">
+                        <span>Get API Key</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">Claude API Key</label>
+                    <div class="relative">
+                        <input type="password" id="cfg-claude-key" placeholder="sk-ant-api03-..." class="w-full bg-white/5 border border-white/10 p-2.5 pr-10 rounded-xl text-xs font-mono">
+                        <button type="button" onclick="togglePasswordVisibility('cfg-claude-key', this)" class="absolute right-2 top-2 text-gray-400 hover:text-white p-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">Claude Model</label>
+                    <select id="cfg-claude-model" class="w-full bg-black/80 border border-white/10 p-2.5 rounded-xl text-xs text-white">
+                        <option value="claude-3-5-haiku-20241022">Claude 3.5 Haiku (Fast &amp; Ultra-responsive)</option>
+                        <option value="claude-3-5-sonnet-20241022">Claude 3.5 Sonnet (State-of-the-Art)</option>
+                        <option value="claude-3-opus-20240229">Claude 3 Opus</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 5. OPENAI CHATGPT CONFIGURATION BOX -->
+            <div id="cfg-box-openai" class="provider-config-box space-y-4 p-4 rounded-2xl bg-black/40 border border-white/10">
+                <div class="flex items-center justify-between">
+                    <span class="font-bold text-sm text-green-400 flex items-center gap-1.5">
+                        <span>⚡</span> OpenAI ChatGPT Settings
+                    </span>
+                    <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" class="text-xs text-green-300 hover:underline flex items-center gap-1">
+                        <span>Get API Key</span>
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                    </a>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">OpenAI API Key</label>
+                    <div class="relative">
+                        <input type="password" id="cfg-openai-key" placeholder="sk-..." class="w-full bg-white/5 border border-white/10 p-2.5 pr-10 rounded-xl text-xs font-mono">
+                        <button type="button" onclick="togglePasswordVisibility('cfg-openai-key', this)" class="absolute right-2 top-2 text-gray-400 hover:text-white p-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="text-xs text-gray-400 font-semibold">OpenAI Model</label>
+                    <select id="cfg-openai-model" class="w-full bg-black/80 border border-white/10 p-2.5 rounded-xl text-xs text-white">
+                        <option value="gpt-4o-mini">GPT-4o Mini (Fast &amp; Smart)</option>
+                        <option value="gpt-4o">GPT-4o (Flagship Multimodal)</option>
+                        <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <button type="button" onclick="saveAISettings()" class="flex-1 bg-purple-600 hover:bg-purple-500 py-3.5 px-5 rounded-xl font-bold text-white text-sm transition-all shadow-lg flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                    <span>Save &amp; Apply Settings</span>
+                </button>
+                <button type="button" onclick="resetAISettings()" class="py-3 px-4 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-xl text-xs font-semibold transition-all">
+                    Reset Defaults
+                </button>
+            </div>
         </div>
     </div>
 
@@ -309,6 +587,336 @@
         MobileDetector.init();
         window.addEventListener('resize', () => MobileDetector.init());
 
+        // AI SETTINGS & MULTI-ENGINE CONFIGURATION
+        const AISettings = {
+            KEY: 'zenderbyte_ai_settings',
+            get: function() {
+                const defaults = {
+                    provider: 'ollama', // 'ollama' | 'gemini' | 'claude' | 'openai'
+                    ollamaPort: '11434',
+                    ollamaHost: 'http://localhost:11434',
+                    geminiKey: '',
+                    geminiModel: 'gemini-2.5-flash',
+                    claudeKey: '',
+                    claudeModel: 'claude-3-5-haiku-20241022',
+                    openaiKey: '',
+                    openaiModel: 'gpt-4o-mini'
+                };
+                try {
+                    const raw = localStorage.getItem(this.KEY);
+                    if (!raw) return defaults;
+                    return { ...defaults, ...JSON.parse(raw) };
+                } catch (e) {
+                    return defaults;
+                }
+            },
+            save: function(settings) {
+                localStorage.setItem(this.KEY, JSON.stringify(settings));
+                this.applyToUI(settings);
+            },
+            applyToUI: function(s) {
+                if (!s) s = this.get();
+
+                // Update active provider selection cards in settings
+                const providers = ['ollama', 'gemini', 'claude', 'openai'];
+                providers.forEach(p => {
+                    const btn = document.getElementById(`prov-btn-${p}`);
+                    const check = btn ? btn.querySelector('.check-icon') : null;
+                    const cfgBox = document.getElementById(`cfg-box-${p}`);
+
+                    if (p === s.provider) {
+                        if (btn) {
+                            btn.classList.add('border-purple-500/60', 'bg-purple-950/25', 'ring-1', 'ring-purple-500/50');
+                            btn.classList.remove('border-white/10', 'bg-white/5');
+                        }
+                        if (check) check.classList.remove('hidden');
+                        if (cfgBox) {
+                            cfgBox.classList.remove('opacity-40');
+                            cfgBox.classList.add('border-purple-500/40');
+                        }
+                    } else {
+                        if (btn) {
+                            btn.classList.remove('border-purple-500/60', 'bg-purple-950/25', 'ring-1', 'ring-purple-500/50');
+                            btn.classList.add('border-white/10', 'bg-white/5');
+                        }
+                        if (check) check.classList.add('hidden');
+                        if (cfgBox) {
+                            cfgBox.classList.add('opacity-40');
+                            cfgBox.classList.remove('border-purple-500/40');
+                        }
+                    }
+                });
+
+                // Populate settings input fields
+                const elOllamaPort = document.getElementById('cfg-ollama-port');
+                if (elOllamaPort) elOllamaPort.value = s.ollamaPort || '11434';
+
+                const elOllamaHost = document.getElementById('cfg-ollama-host');
+                if (elOllamaHost) elOllamaHost.value = s.ollamaHost || 'http://localhost:11434';
+
+                const elGeminiKey = document.getElementById('cfg-gemini-key');
+                if (elGeminiKey) elGeminiKey.value = s.geminiKey || '';
+
+                const elGeminiModel = document.getElementById('cfg-gemini-model');
+                if (elGeminiModel && s.geminiModel) elGeminiModel.value = s.geminiModel;
+
+                const elClaudeKey = document.getElementById('cfg-claude-key');
+                if (elClaudeKey) elClaudeKey.value = s.claudeKey || '';
+
+                const elClaudeModel = document.getElementById('cfg-claude-model');
+                if (elClaudeModel && s.claudeModel) elClaudeModel.value = s.claudeModel;
+
+                const elOpenaiKey = document.getElementById('cfg-openai-key');
+                if (elOpenaiKey) elOpenaiKey.value = s.openaiKey || '';
+
+                const elOpenaiModel = document.getElementById('cfg-openai-model');
+                if (elOpenaiModel && s.openaiModel) elOpenaiModel.value = s.openaiModel;
+
+                // Update AI Panel header & controls
+                const aiHeaderTitle = document.getElementById('aiHeaderTitle');
+                const aiProviderEmoji = document.getElementById('aiProviderEmoji');
+                const aiProviderLabel = document.getElementById('aiProviderLabel');
+                const aiProviderBadge = document.getElementById('aiProviderBadge');
+                const aiActivePing = document.getElementById('aiActivePing');
+
+                const ollamaSliderBox = document.getElementById('ollamaSliderBox');
+                const ollamaEndpointBox = document.getElementById('ollamaEndpointBox');
+                const ollamaHintBox = document.getElementById('ollamaHintBox');
+                const cloudModelBox = document.getElementById('cloudModelBox');
+                const cloudModelName = document.getElementById('cloudModelName');
+                const ollamaUrl = document.getElementById('ollamaUrl');
+
+                if (s.provider === 'gemini') {
+                    if (aiHeaderTitle) aiHeaderTitle.textContent = 'Google Gemini AI';
+                    if (aiProviderEmoji) aiProviderEmoji.textContent = '✨';
+                    if (aiProviderLabel) aiProviderLabel.textContent = 'Google Gemini';
+                    if (aiProviderBadge) {
+                        aiProviderBadge.textContent = s.geminiModel || 'gemini-2.5-flash';
+                        aiProviderBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono shrink-0 border border-emerald-500/30';
+                    }
+                    if (aiActivePing) aiActivePing.className = 'w-2.5 h-2.5 bg-emerald-400 rounded-full animate-ping';
+                    if (ollamaSliderBox) ollamaSliderBox.classList.add('hidden');
+                    if (ollamaEndpointBox) ollamaEndpointBox.classList.add('hidden');
+                    if (ollamaHintBox) ollamaHintBox.classList.add('hidden');
+                    if (cloudModelBox) {
+                        cloudModelBox.classList.remove('hidden');
+                        if (cloudModelName) cloudModelName.textContent = s.geminiModel || 'gemini-2.5-flash';
+                    }
+                } else if (s.provider === 'claude') {
+                    if (aiHeaderTitle) aiHeaderTitle.textContent = 'Claude AI';
+                    if (aiProviderEmoji) aiProviderEmoji.textContent = '🧠';
+                    if (aiProviderLabel) aiProviderLabel.textContent = 'Anthropic Claude';
+                    if (aiProviderBadge) {
+                        aiProviderBadge.textContent = s.claudeModel || 'claude-3-5-haiku';
+                        aiProviderBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono shrink-0 border border-amber-500/30';
+                    }
+                    if (aiActivePing) aiActivePing.className = 'w-2.5 h-2.5 bg-amber-400 rounded-full animate-ping';
+                    if (ollamaSliderBox) ollamaSliderBox.classList.add('hidden');
+                    if (ollamaEndpointBox) ollamaEndpointBox.classList.add('hidden');
+                    if (ollamaHintBox) ollamaHintBox.classList.add('hidden');
+                    if (cloudModelBox) {
+                        cloudModelBox.classList.remove('hidden');
+                        if (cloudModelName) cloudModelName.textContent = s.claudeModel || 'claude-3-5-haiku-20241022';
+                    }
+                } else if (s.provider === 'openai') {
+                    if (aiHeaderTitle) aiHeaderTitle.textContent = 'ChatGPT AI';
+                    if (aiProviderEmoji) aiProviderEmoji.textContent = '⚡';
+                    if (aiProviderLabel) aiProviderLabel.textContent = 'OpenAI ChatGPT';
+                    if (aiProviderBadge) {
+                        aiProviderBadge.textContent = s.openaiModel || 'gpt-4o-mini';
+                        aiProviderBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-300 font-mono shrink-0 border border-green-500/30';
+                    }
+                    if (aiActivePing) aiActivePing.className = 'w-2.5 h-2.5 bg-green-400 rounded-full animate-ping';
+                    if (ollamaSliderBox) ollamaSliderBox.classList.add('hidden');
+                    if (ollamaEndpointBox) ollamaEndpointBox.classList.add('hidden');
+                    if (ollamaHintBox) ollamaHintBox.classList.add('hidden');
+                    if (cloudModelBox) {
+                        cloudModelBox.classList.remove('hidden');
+                        if (cloudModelName) cloudModelName.textContent = s.openaiModel || 'gpt-4o-mini';
+                    }
+                } else {
+                    // Ollama (default)
+                    if (aiHeaderTitle) aiHeaderTitle.textContent = 'Ollama Intelligence';
+                    if (aiProviderEmoji) aiProviderEmoji.textContent = '🦙';
+                    if (aiProviderLabel) aiProviderLabel.textContent = 'Ollama';
+                    if (aiProviderBadge) {
+                        aiProviderBadge.textContent = s.ollamaPort || '11434';
+                        aiProviderBadge.className = 'text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono shrink-0 border border-blue-500/30';
+                    }
+                    if (aiActivePing) aiActivePing.className = 'w-2.5 h-2.5 bg-blue-500 rounded-full animate-ping';
+                    if (ollamaSliderBox) ollamaSliderBox.classList.remove('hidden');
+                    if (ollamaEndpointBox) ollamaEndpointBox.classList.remove('hidden');
+                    if (ollamaHintBox) ollamaHintBox.classList.remove('hidden');
+                    if (cloudModelBox) cloudModelBox.classList.add('hidden');
+                    if (ollamaUrl) {
+                        const host = (s.ollamaHost || 'http://localhost:11434').replace(/\/+$/, '');
+                        ollamaUrl.value = `${host}/api/generate`;
+                    }
+                }
+            }
+        };
+
+        // SETTINGS INTERACTION FUNCTIONS
+        function selectAIProvider(providerName) {
+            const s = AISettings.get();
+            s.provider = providerName;
+            AISettings.save(s);
+
+            const ind = document.getElementById('savedIndicator');
+            if (ind) {
+                ind.textContent = `✓ Selected ${providerName.toUpperCase()}`;
+                ind.classList.remove('hidden');
+                setTimeout(() => {
+                    ind.classList.add('hidden');
+                    ind.textContent = '✓ Saved';
+                }, 2000);
+            }
+
+            const targetBox = document.getElementById(`cfg-box-${providerName}`);
+            if (targetBox) {
+                targetBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        }
+
+        function setOllamaPortPreset(port) {
+            const portInput = document.getElementById('cfg-ollama-port');
+            const hostInput = document.getElementById('cfg-ollama-host');
+            if (portInput) portInput.value = port;
+            if (hostInput) {
+                let current = hostInput.value.trim() || 'http://localhost:11434';
+                try {
+                    const parsed = new URL(current.startsWith('http') ? current : 'http://' + current);
+                    parsed.port = port;
+                    hostInput.value = parsed.origin;
+                } catch (e) {
+                    hostInput.value = `http://localhost:${port}`;
+                }
+            }
+            saveAISettings(true);
+            loadModels();
+        }
+
+        function onOllamaPortChange() {
+            const port = (document.getElementById('cfg-ollama-port')?.value || '').trim();
+            const hostInput = document.getElementById('cfg-ollama-host');
+            if (port && hostInput) {
+                let current = hostInput.value.trim() || 'http://localhost:11434';
+                try {
+                    const parsed = new URL(current.startsWith('http') ? current : 'http://' + current);
+                    parsed.port = port;
+                    hostInput.value = parsed.origin;
+                } catch (e) {}
+            }
+        }
+
+        function onOllamaHostChange() {
+            const host = (document.getElementById('cfg-ollama-host')?.value || '').trim();
+            const portInput = document.getElementById('cfg-ollama-port');
+            if (host && portInput) {
+                try {
+                    const parsed = new URL(host.startsWith('http') ? host : 'http://' + host);
+                    if (parsed.port) {
+                        portInput.value = parsed.port;
+                    }
+                } catch (e) {}
+            }
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const el = document.getElementById(inputId);
+            if (!el) return;
+            if (el.type === 'password') {
+                el.type = 'text';
+                if (btn) btn.classList.add('text-purple-400');
+            } else {
+                el.type = 'password';
+                if (btn) btn.classList.remove('text-purple-400');
+            }
+        }
+
+        function saveAISettings(silent = false) {
+            const s = AISettings.get();
+
+            s.ollamaPort = (document.getElementById('cfg-ollama-port')?.value || '11434').trim();
+            s.ollamaHost = (document.getElementById('cfg-ollama-host')?.value || 'http://localhost:11434').trim();
+            s.geminiKey = (document.getElementById('cfg-gemini-key')?.value || '').trim();
+            s.geminiModel = document.getElementById('cfg-gemini-model')?.value || 'gemini-2.5-flash';
+            s.claudeKey = (document.getElementById('cfg-claude-key')?.value || '').trim();
+            s.claudeModel = document.getElementById('cfg-claude-model')?.value || 'claude-3-5-haiku-20241022';
+            s.openaiKey = (document.getElementById('cfg-openai-key')?.value || '').trim();
+            s.openaiModel = document.getElementById('cfg-openai-model')?.value || 'gpt-4o-mini';
+
+            AISettings.save(s);
+
+            if (!silent) {
+                const ind = document.getElementById('savedIndicator');
+                if (ind) {
+                    ind.textContent = '✓ Saved & Applied!';
+                    ind.classList.remove('hidden');
+                    setTimeout(() => {
+                        ind.classList.add('hidden');
+                        ind.textContent = '✓ Saved';
+                    }, 2500);
+                }
+            }
+        }
+
+        function resetAISettings() {
+            const defaults = {
+                provider: 'ollama',
+                ollamaPort: '11434',
+                ollamaHost: 'http://localhost:11434',
+                geminiKey: '',
+                geminiModel: 'gemini-2.5-flash',
+                claudeKey: '',
+                claudeModel: 'claude-3-5-haiku-20241022',
+                openaiKey: '',
+                openaiModel: 'gpt-4o-mini'
+            };
+            AISettings.save(defaults);
+            const ind = document.getElementById('savedIndicator');
+            if (ind) {
+                ind.textContent = '✓ Reset to Defaults';
+                ind.classList.remove('hidden');
+                setTimeout(() => {
+                    ind.classList.add('hidden');
+                    ind.textContent = '✓ Saved';
+                }, 2000);
+            }
+            loadModels();
+        }
+
+        async function testOllamaConnection() {
+            const statusBox = document.getElementById('ollamaTestStatus');
+            const btn = document.getElementById('btnTestOllama');
+            const host = (document.getElementById('cfg-ollama-host')?.value || 'http://localhost:11434').trim().replace(/\/+$/, '');
+
+            if (btn) btn.disabled = true;
+            if (statusBox) {
+                statusBox.className = 'text-xs p-2.5 rounded-lg font-mono bg-blue-950/40 text-blue-300 border border-blue-500/30 flex items-center gap-2';
+                statusBox.innerHTML = '<span class="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span> Connecting to ' + escapeHtml(host) + '...';
+                statusBox.classList.remove('hidden');
+            }
+
+            try {
+                const res = await fetch(`${host}/api/tags`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                const models = data.models || [];
+                statusBox.className = 'text-xs p-2.5 rounded-lg font-mono bg-emerald-950/40 text-emerald-300 border border-emerald-500/30';
+                statusBox.innerHTML = `✓ Online! Found ${models.length} model(s): ` + (models.map(m => m.name).slice(0, 3).join(', ') || 'none');
+                loadModels();
+            } catch (err) {
+                statusBox.className = 'text-xs p-2.5 rounded-lg font-mono bg-red-950/40 text-red-300 border border-red-500/30 space-y-1';
+                statusBox.innerHTML = `<div>❌ Cannot reach ${escapeHtml(host)}</div><div class="text-[11px] text-gray-400">Run: <code>set OLLAMA_ORIGINS="*" & ollama serve</code></div>`;
+            } finally {
+                if (btn) btn.disabled = false;
+            }
+        }
+
+        // Initialize AI Settings on load
+        AISettings.applyToUI();
+
         // PANEL LOGIC
         function togglePanel(panelId) {
             const current = panelId ? document.getElementById(panelId) : null;
@@ -318,7 +926,7 @@
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             // Remove active style from all sidebar toggle buttons
             document.querySelectorAll('[data-panel-btn]').forEach(b => {
-                b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50');
+                b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50', 'ring-purple-500/50');
             });
 
             // If it wasn't active and target exists, open it
@@ -331,6 +939,7 @@
                     else if (panelId === 'wa-panel') btn.classList.add('ring-green-500/50');
                     else if (panelId === 'dc-panel') btn.classList.add('ring-indigo-500/50');
                     else if (panelId === 'adv-panel') btn.classList.add('ring-yellow-500/50');
+                    else if (panelId === 'settings-panel') btn.classList.add('ring-purple-500/50');
                 }
             }
         }
@@ -356,7 +965,12 @@
         // SEARCH LOGIC
         function doGoogleSearch() {
             const val = document.getElementById('mainSearch').value;
-            if (val.trim()) {
+            if (!val.trim()) return;
+
+            const smartNav = resolveSmartNavigation(val);
+            if (smartNav) {
+                window.location.href = smartNav.url;
+            } else {
                 window.location.href = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
             }
         }
@@ -405,10 +1019,12 @@
         async function loadModels() {
             let localModelsList = [];
             let isLocalConnected = false;
+            const s = AISettings.get();
+            const host = (s.ollamaHost || 'http://localhost:11434').trim().replace(/\/+$/, '');
 
             try {
                 // Fetch local models if Ollama is running
-                const res = await fetch('http://localhost:11434/api/tags');
+                const res = await fetch(`${host}/api/tags`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && Array.isArray(data.models)) {
@@ -464,21 +1080,85 @@
             return win;
         }
 
-        // DIRECT WEBSITE / DOMAIN RESOLVER
-        function resolveDirectWebsite(text) {
+        // Exact official YouTube sp filter parameter mappings
+        const YOUTUBE_FILTER_CODES = {
+            'live': 'EgJAAQ%253D%253D',       // Features: Live streams
+            'shorts': 'EgIQCQ%253D%253D',     // Duration: Under 4 minutes (Shorts)
+            'playlist': 'EgIQAw%253D%253D',   // Type: Playlist
+            'channel': 'EgIQAg%253D%253D',    // Type: Channel
+            '4k': 'EgJwAQ%253D%253D',         // Features: 4K Quality
+            'movie': 'EgIQBA%253D%253D'       // Type: Full Movie
+        };
+
+        const YOUTUBE_FILTER_LABELS = {
+            'live': 'Currently Live',
+            'shorts': 'YouTube Shorts',
+            'playlist': 'Playlists',
+            'channel': 'Channels',
+            '4k': '4K Quality',
+            'movie': 'Full Movies'
+        };
+
+        // YOUTUBE SMART FILTER PARSER & URL BUILDER
+        function buildYouTubeSearch(rawQuery, filterHint = null) {
+            let q = (rawQuery || '').trim();
+            const filterKey = filterHint ? filterHint.toLowerCase().trim() : null;
+
+            // Clean the search query if it contains trailing or leading filter noise
+            let cleanSearch = q
+                .replace(/^(?:open|go\s+to|visit|launch|watch|find|search\s+(?:for)?|look\s+up)\s+/i, '')
+                .replace(/\b(?:on\s+youtube|in\s+youtube|youtube|yt)\b/gi, '')
+                .replace(/\s+/g, ' ')
+                .trim();
+
+            if (!cleanSearch) cleanSearch = (rawQuery || '').trim();
+
+            const sp = filterKey && YOUTUBE_FILTER_CODES[filterKey] ? YOUTUBE_FILTER_CODES[filterKey] : null;
+            const filterLabel = filterKey && YOUTUBE_FILTER_LABELS[filterKey] ? YOUTUBE_FILTER_LABELS[filterKey] : null;
+
+            const finalUrl = sp
+                ? `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanSearch)}&sp=${sp}`
+                : `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanSearch)}`;
+
+            const altLinks = [
+                { label: 'All Results', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanSearch)}` }
+            ];
+
+            if (filterKey !== 'live') {
+                altLinks.push({ label: 'Live Filter', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanSearch)}&sp=EgJAAQ%253D%253D` });
+            }
+            if (filterKey !== 'shorts') {
+                altLinks.push({ label: 'Shorts Filter', url: `https://www.youtube.com/results?search_query=${encodeURIComponent(cleanSearch)}&sp=EgIQCQ%253D%253D` });
+            }
+            altLinks.push({ label: 'Google Search', url: `https://www.google.com/search?q=${encodeURIComponent(cleanSearch + ' youtube')}` });
+
+            return {
+                url: finalUrl,
+                cleanSearch,
+                filterType: filterKey,
+                filterLabel,
+                altLinks
+            };
+        }
+
+        // SMART NAVIGATION & DIRECT WEBSITE RESOLVER (Used by main search bar for direct URLs and platform names)
+        function resolveSmartNavigation(text) {
             if (!text) return null;
             let trimmed = text.trim();
 
-            // Already a full URL
+            // 1. Full explicit URL
             if (/^https?:\/\/[^\s]+$/i.test(trimmed)) {
-                return trimmed;
+                return {
+                    type: 'direct',
+                    platform: 'Direct URL',
+                    url: trimmed,
+                    query: trimmed,
+                    title: trimmed,
+                    altLinks: []
+                };
             }
 
-            // Commands: "open google.com", "go to youtube.com", "visit reddit.com", "open twitter"
-            const match = trimmed.match(/^(?:open|go\s+to|visit|launch|browse\s+to|navigate\s+to)\s+([^\s?#]+)$/i);
-            const target = match ? match[1].trim() : trimmed;
-
-            // Popular services map
+            // Popular services map for exact platform matches
             const services = {
                 'google': 'https://www.google.com',
                 'google.com': 'https://www.google.com',
@@ -516,17 +1196,52 @@
                 'twitch.tv': 'https://www.twitch.tv'
             };
 
-            const key = target.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
-            if (services[key]) {
-                return services[key];
+            // 2. Check for exact platform name like "open youtube", "go to reddit", "visit google.com"
+            const exactPlatformMatch = trimmed.match(/^(?:open|go\s+to|visit|launch|browse\s+to|navigate\s+to)\s+([a-zA-Z0-9.-]+)$/i);
+            if (exactPlatformMatch) {
+                const target = exactPlatformMatch[1].toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+                if (services[target]) {
+                    return {
+                        type: 'direct',
+                        platform: target.charAt(0).toUpperCase() + target.slice(1),
+                        url: services[target],
+                        query: target,
+                        title: `Open ${target}`,
+                        altLinks: []
+                    };
+                }
+                if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?$/i.test(target)) {
+                    const fullUrl = target.startsWith('http') ? target : `https://${target}`;
+                    return {
+                        type: 'direct',
+                        platform: 'Website',
+                        url: fullUrl,
+                        query: target,
+                        title: target,
+                        altLinks: []
+                    };
+                }
             }
 
-            // Domain pattern check: example.com or domain.org/path
-            if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?$/i.test(target)) {
-                return target.startsWith('http') ? target : `https://${target}`;
+            // Bare domain without "go to": e.g. "google.com", "github.com/repo"
+            if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?$/i.test(trimmed)) {
+                const fullUrl = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+                return {
+                    type: 'direct',
+                    platform: 'Website',
+                    url: fullUrl,
+                    query: trimmed,
+                    title: trimmed,
+                    altLinks: []
+                };
             }
 
             return null;
+        }
+
+        function resolveDirectWebsite(text) {
+            const nav = resolveSmartNavigation(text);
+            return nav ? nav.url : null;
         }
 
         // WAYBACK MACHINE & CLIENT-SIDE URL UTILITIES
@@ -557,6 +1272,123 @@
             };
         }
 
+        async function executeAIRequest(userText, systemPrompt, settings) {
+            const provider = settings.provider || 'ollama';
+
+            if (provider === 'gemini') {
+                const apiKey = (settings.geminiKey || '').trim();
+                if (!apiKey) {
+                    throw { isConfigError: true, provider: 'Google Gemini', message: 'Google Gemini API key is missing. Please enter your API key in Settings.' };
+                }
+                const model = settings.geminiModel || 'gemini-2.5-flash';
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [
+                            {
+                                role: 'user',
+                                parts: [{ text: `${systemPrompt}\n\nUser request: ${userText}` }]
+                            }
+                        ],
+                        generationConfig: {
+                            temperature: 0.2
+                        }
+                    })
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    const msg = errData?.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+                    throw new Error(`Google Gemini Error: ${msg}`);
+                }
+                const data = await res.json();
+                return data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+            } else if (provider === 'claude') {
+                const apiKey = (settings.claudeKey || '').trim();
+                if (!apiKey) {
+                    throw { isConfigError: true, provider: 'Anthropic Claude', message: 'Claude API key is missing. Please enter your API key in Settings.' };
+                }
+                const model = settings.claudeModel || 'claude-3-5-haiku-20241022';
+                const res = await fetch('https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01',
+                        'anthropic-dangerous-direct-browser-access': 'true'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        max_tokens: 1024,
+                        system: systemPrompt,
+                        messages: [
+                            { role: 'user', content: userText }
+                        ]
+                    })
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    const msg = errData?.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+                    throw new Error(`Claude Error: ${msg}`);
+                }
+                const data = await res.json();
+                return data.content?.[0]?.text || '';
+
+            } else if (provider === 'openai') {
+                const apiKey = (settings.openaiKey || '').trim();
+                if (!apiKey) {
+                    throw { isConfigError: true, provider: 'OpenAI ChatGPT', message: 'OpenAI API key is missing. Please enter your API key in Settings.' };
+                }
+                const model = settings.openaiModel || 'gpt-4o-mini';
+                const res = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        temperature: 0.2,
+                        messages: [
+                            { role: 'system', content: systemPrompt },
+                            { role: 'user', content: userText }
+                        ]
+                    })
+                });
+                if (!res.ok) {
+                    const errData = await res.json().catch(() => ({}));
+                    const msg = errData?.error?.message || `HTTP ${res.status}: ${res.statusText}`;
+                    throw new Error(`OpenAI Error: ${msg}`);
+                }
+                const data = await res.json();
+                return data.choices?.[0]?.message?.content || '';
+
+            } else {
+                // Ollama (Local)
+                const host = (settings.ollamaHost || 'http://localhost:11434').replace(/\/+$/, '');
+                const endpoint = (document.getElementById('ollamaUrl')?.value || `${host}/api/generate`).trim();
+                const selectedModelObj = allModels[document.getElementById('modelSlider')?.value];
+                const model = selectedModelObj?.name || 'llama3';
+
+                const res = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: `${systemPrompt}\nUser: ${userText}`,
+                        stream: false
+                    })
+                });
+                if (!res.ok) {
+                    throw new Error(`Ollama HTTP ${res.status}: ${res.statusText}`);
+                }
+                const data = await res.json();
+                return data.response || '';
+            }
+        }
+
         function showGeneratingIndicator() {
             const chatBox = document.getElementById('chatBox');
             const sendBtn = document.getElementById('aiSendBtn');
@@ -565,14 +1397,23 @@
                 sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
             }
 
+            const currentSettings = AISettings.get();
+            const providerNames = {
+                'ollama': 'Ollama',
+                'gemini': 'Gemini',
+                'claude': 'Claude',
+                'openai': 'ChatGPT'
+            };
+            const pName = providerNames[currentSettings.provider] || 'AI';
+
             const existing = document.getElementById('aiGeneratingIndicator');
             if (!existing) {
                 const genDiv = document.createElement('div');
                 genDiv.id = 'aiGeneratingIndicator';
-                genDiv.className = 'flex items-center gap-2 text-xs text-blue-400 bg-blue-950/20 border border-blue-500/20 p-2.5 rounded-lg animate-pulse';
+                genDiv.className = 'flex items-center gap-2 text-xs text-purple-400 bg-purple-950/20 border border-purple-500/20 p-2.5 rounded-lg animate-pulse';
                 genDiv.innerHTML = `
-                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-ping"></span>
-                        <span class="font-mono">Generating...</span>
+                        <span class="w-2 h-2 bg-purple-400 rounded-full animate-ping"></span>
+                        <span class="font-mono">Thinking with ${escapeHtml(pName)}...</span>
                     `;
                 chatBox.appendChild(genDiv);
                 chatBox.scrollTop = chatBox.scrollHeight;
@@ -593,9 +1434,8 @@
         async function sendToOllama() {
             const msgInput = document.getElementById('aiMsg');
             const chatBox = document.getElementById('chatBox');
-            const selectedModelObj = allModels[document.getElementById('modelSlider').value];
-            const model = selectedModelObj?.name || 'llama3';
-            const endpoint = document.getElementById('ollamaUrl').value;
+            const currentSettings = AISettings.get();
+            const currentProvider = currentSettings.provider || 'ollama';
 
             if (!msgInput.value.trim()) return;
 
@@ -606,11 +1446,11 @@
             chatBox.innerHTML += `<div class="bg-blue-600/20 p-3 rounded-lg text-sm"><b>You:</b> ${escapeHtml(userText)}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // 1. Direct website / URL intent check (e.g. "open google.com", "visit github.com", "open youtube")
-            const directSiteUrl = resolveDirectWebsite(userText);
-            if (directSiteUrl) {
-                openInIncognitoTab(directSiteUrl);
-                const cleanDomain = new URL(directSiteUrl).hostname;
+            // Only direct explicit URLs or exact domains (e.g. https://... or google.com) bypass AI
+            const directNav = resolveSmartNavigation(userText);
+            if (directNav && directNav.type === 'direct') {
+                openInIncognitoTab(directNav.url);
+                const cleanDomain = new URL(directNav.url).hostname;
                 chatBox.innerHTML += `
                         <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2">
                             <div class="flex items-center justify-between">
@@ -622,7 +1462,7 @@
                             </div>
                             <div class="text-gray-200 text-xs">Directly opened website in an incognito private tab.</div>
                             <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                <a href="${escapeHtml(directSiteUrl)}" target="_blank" rel="noopener noreferrer"
+                                <a href="${escapeHtml(directNav.url)}" target="_blank" rel="noopener noreferrer"
                                    class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
                                     <span>Launch Website</span>
                                 </a>
@@ -630,7 +1470,7 @@
                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
                                     <span>Wayback Machine</span>
                                 </a>
-                                <span class="text-gray-400 text-[11px] font-mono truncate max-w-[200px]">${escapeHtml(directSiteUrl)}</span>
+                                <span class="text-gray-400 text-[11px] font-mono truncate max-w-[200px]">${escapeHtml(directNav.url)}</span>
                             </div>
                         </div>
                     `;
@@ -642,50 +1482,50 @@
             showGeneratingIndicator();
 
             const systemPrompt = `
-You are an intelligent AI with live internet access in incognito mode.
+You are the intelligent navigation assistant for ZenderByte.
+You have FULL web navigation capabilities through ZenderByte. The app executes your navigation decisions.
+CRITICAL: NEVER refuse user requests to find YouTube streams, videos, channels, news, articles, or websites. Do NOT say "I can't assist you in accessing YouTube content" or "I cannot browse live streams". ZenderByte opens the authentic live destination for the user based on your JSON decision.
 
-CRITICAL DIRECTIVE - TRIPLE CHECK ALL URLS:
-1. YOU MUST TRIPLE CHECK ANY URL BEFORE OUTPUTTING IT:
-       - Check every single character, domain, subpath, and ID.
-       - NEVER invent, guess, or hallucinate random letters, numbers, or hashes in URLs (e.g. NEVER make up Reddit post IDs like "/comments/xxxxxx/", YouTube video IDs, Twitter/X tweet IDs, or arbitrary article slugs).
-       - Hallucinating random letters causes fatal 404 dead links!
-       - Ground-truth reference: The famous original Backrooms post on Reddit is EXACTLY "https://old.reddit.com/r/nosleep/comments/bq6jqp/the_backrooms/" (Reddit post ID is "bq6jqp"). Notice the letters "bq6jqp" - never guess random letters like "2d1kj8".
-       - If you know the 100% exact, authentic real-world URL (verified character-by-character, triple checked), respond ONLY with JSON:
-         { "action": "open_url", "url": "<exact_triple_checked_url>", "title": "<exact title or description>" }
+DECISION PROTOCOL:
+You decide what website to navigate to, what clean search terms to use, and what filter (if any) to apply.
+Always output a JSON block matching one of the following schemas:
 
-2. IF YOU DO NOT KNOW THE EXACT ID / PATH WITH 100% CERTAINTY:
-       - DO NOT GUESS RANDOM LETTERS.
-       - Instead, respond with JSON for an article or search query so the browser lands on the authentic page via search:
-         { "action": "article", "query": "<clean descriptive search terms>" }
-         or
-         { "action": "search", "query": "<clean search terms>" }
+1. FOR YOUTUBE / VIDEO / STREAM / SHORTS SEARCHES:
+   You decide:
+   - "query": clean search terms stripped of conversational words or filler grammar (e.g., if user says "X's livestream on yt" or "X's latest stream youtube", you can choose whether to search for "X" with the filters on).
+   - "filter": (OPTIONAL) choose one of:
+       "live"     -> for currently live streams / broadcasts / X streams / on air
+       "shorts"   -> for YouTube shorts / short clips (<4 min)
+       "playlist" -> for playlists / collections
+       "channel"  -> for creator channels / user profiles
+       "4k"       -> for 4K / HDR quality videos
+       "movie"    -> for full movies
+   - "website": "youtube" (or direct url)
+   - "title": descriptive title indicating destination and intent
+   - note that "filter" is only a thing in youtube for the time being.
 
-3. FOR GENERAL WEBSITES (e.g. "open google.com", "go to youtube", "visit reddit"):
-       Respond ONLY with JSON:
-       { "action": "open_url", "url": "https://www.google.com" }
+   Format:
+   { "action": "open_url", "website": "youtube", "query": "<clean search terms>", "filter": "<live|shorts|playlist|channel|4k|movie|none>", "title": "<descriptive title>" }
+   Or if you specify full URL:
+   { "action": "open_url", "url": "https://www.youtube.com/results?search_query=...", "filter": "<filter_name>", "title": "..." }
 
-4. FOR GENERAL CHAT (no web navigation needed):
-       Answer normally, accurately, and politely.
+2. FOR GENERAL WEBSITES (e.g. Twitch, Reddit, Wikipedia, GitHub, specific sites):
+   You choose the appropriate target URL or website:
+   { "action": "open_url", "url": "<target_url>", "title": "<title>" }
+
+3. FOR ARTICLES, NEWS, OR INFORMATIONAL SEARCHES:
+   { "action": "article", "query": "<clean search terms>" }
+   or
+   { "action": "search", "query": "<clean search terms>" }
+
+4. FOR GENERAL CONVERSATION (no navigation needed):
+   Answer directly, concisely, and helpfully without JSON.
+
+Reminder: You do not remember past chats, do not claim that you can.
 `;
 
             try {
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        model: model,
-                        prompt: `${systemPrompt}\nUser: ${userText}`,
-                        stream: false
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const rawResponse = data.response || '';
-
+                const rawResponse = await executeAIRequest(userText, systemPrompt, currentSettings);
                 hideGeneratingIndicator();
 
                 // Check for JSON action response
@@ -703,57 +1543,136 @@ CRITICAL DIRECTIVE - TRIPLE CHECK ALL URLS:
                 const isExplicitArticleRequest = /\b(article|news\s+story|editorial|report|backrooms\s+image|original\s+image|first\s+post)\b/i.test(userText);
 
                 if (actionData && actionData.action === 'open_url') {
-                    // Direct Triple-Checked URL action
-                    const rawTarget = resolveDirectWebsite(actionData.url || userText) || actionData.url;
-                    const cleanDomain = rawTarget.replace(/^https?:\/\//, '').split('/')[0];
-                    const cardId = 'url-card-' + Date.now();
-                    const archiveFallback = `https://web.archive.org/web/*/${encodeURIComponent(rawTarget.replace(/^https?:\/\//, ''))}`;
+                    // Check if AI specified a filter key or YouTube action
+                    const filterKey = (actionData.filter && actionData.filter !== 'none') ? actionData.filter.toLowerCase().trim() : null;
+                    const isYouTubeAction = actionData.website === 'youtube' ||
+                                           (actionData.url && /youtube\.com/i.test(actionData.url)) ||
+                                           filterKey in YOUTUBE_FILTER_CODES;
 
-                    // Open in private tab
-                    openInIncognitoTab(rawTarget);
+                    let finalTargetUrl = '';
+                    let displayTitle = actionData.title || '';
+                    let filterBadge = null;
+                    let altLinks = [];
+                    let platformName = 'Website';
 
-                    chatBox.innerHTML += `
-                            <div id="${cardId}" class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                    if (isYouTubeAction) {
+                        platformName = 'YouTube';
+                        // Let the AI-decided query or user query take priority
+                        const searchTerms = actionData.query || (actionData.url ? null : userText);
+                        
+                        if (searchTerms) {
+                            const ytBuilt = buildYouTubeSearch(searchTerms, filterKey);
+                            finalTargetUrl = ytBuilt.url;
+                            filterBadge = ytBuilt.filterLabel;
+                            altLinks = ytBuilt.altLinks;
+                            if (!displayTitle) {
+                                displayTitle = filterBadge ? `YouTube (${filterBadge}): ${ytBuilt.cleanSearch}` : `YouTube: ${ytBuilt.cleanSearch}`;
+                            }
+                        } else if (actionData.url) {
+                            let ytUrl = actionData.url;
+                            // If AI provided a filter key and URL doesn't have &sp= yet, attach the exact filter param
+                            if (filterKey && YOUTUBE_FILTER_CODES[filterKey] && !ytUrl.includes('&sp=')) {
+                                const sep = ytUrl.includes('?') ? '&' : '?';
+                                ytUrl += `${sep}sp=${YOUTUBE_FILTER_CODES[filterKey]}`;
+                            }
+                            finalTargetUrl = ytUrl;
+                            filterBadge = filterKey && YOUTUBE_FILTER_LABELS[filterKey] ? YOUTUBE_FILTER_LABELS[filterKey] : null;
+                            if (!displayTitle) displayTitle = filterBadge ? `YouTube (${filterBadge})` : 'YouTube Results';
+                        }
+                    } else {
+                        finalTargetUrl = resolveDirectWebsite(actionData.url || actionData.query || userText) || actionData.url;
+                    }
+
+                    if (!finalTargetUrl) {
+                        finalTargetUrl = `https://www.google.com/search?q=${encodeURIComponent(actionData.query || userText)}`;
+                    }
+
+                    // Open in incognito/private tab
+                    openInIncognitoTab(finalTargetUrl);
+
+                    if (isYouTubeAction) {
+                        const iconColor = filterKey === 'shorts' ? 'text-pink-400' : 'text-red-400';
+                        const badgeColor = filterKey === 'shorts' ? 'bg-pink-500/20 text-pink-300' : 'bg-red-500/20 text-red-300';
+                        const btnBg = filterKey === 'shorts' ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500' : 'bg-red-600 hover:bg-red-500';
+                        const filterTag = filterBadge ? `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 font-mono">${escapeHtml(filterBadge)}</span>` : '';
+
+                        chatBox.innerHTML += `
+                            <div class="bg-gradient-to-r from-red-950/40 via-blue-950/40 to-black/50 border border-red-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
                                 <div class="flex items-center justify-between">
-                                    <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
-                                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        Triple-Checked URL &bull; Opened in Tab
+                                    <span class="flex items-center gap-1.5 ${iconColor} font-bold text-xs uppercase tracking-wider">
+                                        <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                        YouTube &bull; Filter Activated
                                     </span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">${escapeHtml(cleanDomain)}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        ${filterTag}
+                                        <span class="text-[10px] px-2 py-0.5 rounded ${badgeColor} font-mono">AI Routed</span>
+                                    </div>
                                 </div>
-                                <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(actionData.title || rawTarget)}</div>
-                                <div class="text-gray-400 text-[11px]">Opened in private incognito tab. Triple-checked against hallucinated random letters.</div>
+                                <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(displayTitle)}</div>
+                                <div class="text-gray-300 text-xs">AI selected destination: <b>YouTube</b>${filterBadge ? ` with <b>${escapeHtml(filterBadge)}</b> filter` : ''}. Opened in private tab.</div>
                                 <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                    <a href="${escapeHtml(rawTarget)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
-                                        <span>Open Page</span>
+                                    <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-semibold transition-all shadow-md">
+                                        <span>Open on YouTube</span>
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                                     </a>
-                                    <a id="${cardId}-archive-btn" href="${escapeHtml(archiveFallback)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                        <span id="${cardId}-archive-label">Internet Archive</span>
-                                    </a>
-                                    <a href="https://www.google.com/search?q=${encodeURIComponent(rawTarget)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
-                                        <span>Verify on Google</span>
-                                    </a>
+                                    ${altLinks.map(link => `
+                                        <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
+                                            <span>${escapeHtml(link.label)}</span>
+                                        </a>
+                                    `).join('')}
                                 </div>
                             </div>
                         `;
+                    } else {
+                        const cleanDomain = finalTargetUrl.replace(/^https?:\/\//, '').split('/')[0];
+                        const cardId = 'url-card-' + Date.now();
+                        const archiveFallback = `https://web.archive.org/web/*/${encodeURIComponent(cleanDomain)}`;
 
-                    // Async check Wayback Machine in background to enhance button if snapshot exists
-                    checkWaybackAvailability(rawTarget).then(wb => {
-                        if (wb.available && wb.snapshotUrl) {
-                            const btn = document.getElementById(`${cardId}-archive-btn`);
-                            const lbl = document.getElementById(`${cardId}-archive-label`);
-                            if (btn && lbl) {
-                                btn.href = wb.snapshotUrl;
-                                lbl.textContent = 'Wayback Snapshot Available';
-                                btn.classList.add('border-emerald-500/50', 'text-emerald-300');
+                        chatBox.innerHTML += `
+                                <div id="${cardId}" class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                                    <div class="flex items-center justify-between">
+                                        <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
+                                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            AI Navigation &bull; Opened in Tab
+                                        </span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">${escapeHtml(cleanDomain)}</span>
+                                    </div>
+                                    <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(displayTitle || finalTargetUrl)}</div>
+                                    <div class="text-gray-400 text-[11px]">Opened in private incognito tab. Directed by AI assistant.</div>
+                                    <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                        <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
+                                            <span>Open Page</span>
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                        </a>
+                                        <a id="${cardId}-archive-btn" href="${escapeHtml(archiveFallback)}" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                            <span id="${cardId}-archive-label">Internet Archive</span>
+                                        </a>
+                                        <a href="https://www.google.com/search?q=${encodeURIComponent(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
+                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
+                                            <span>Verify on Google</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            `;
+
+                        // Async check Wayback Machine in background
+                        checkWaybackAvailability(finalTargetUrl).then(wb => {
+                            if (wb.available && wb.snapshotUrl) {
+                                const btn = document.getElementById(`${cardId}-archive-btn`);
+                                const lbl = document.getElementById(`${cardId}-archive-label`);
+                                if (btn && lbl) {
+                                    btn.href = wb.snapshotUrl;
+                                    lbl.textContent = 'Wayback Snapshot Available';
+                                    btn.classList.add('border-emerald-500/50', 'text-emerald-300');
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
 
                 } else if ((actionData && (actionData.action === 'article' || (actionData.action === 'search' && (actionData.url === true || isExplicitArticleRequest)))) || isExplicitArticleRequest) {
                     // ARTICLE SEARCH: Open Google Lucky Article or Search directly without hallucinated URLs
@@ -826,19 +1745,127 @@ CRITICAL DIRECTIVE - TRIPLE CHECK ALL URLS:
                             </div>
                         `;
                 } else {
-                    // Standard conversational response
-                    chatBox.innerHTML += `<div class="bg-white/10 p-3 rounded-lg text-sm"><b>AI:</b> ${escapeHtml(rawResponse)}</div>`;
+                    // Check if the AI outputted a generic refusal (e.g., "I can't assist you in accessing YouTube content", "I can't help you with that")
+                    const isRefusal = /(can't|cannot|unable to|can not|not able to).*(help|assist|access|provide|open|browse|search|view|youtube)/i.test(rawResponse) ||
+                                      /(as an ai|language model|i do not have access|i don't have access)/i.test(rawResponse);
+
+                    if (isRefusal) {
+                        // Fallback only if the model explicitly refused
+                        let fallbackFilter = null;
+                        if (/\b(currently\s+live|live\s+stream|livestream|stream|on\s+air)\b/i.test(userText)) fallbackFilter = 'live';
+                        else if (/\b(shorts?)\b/i.test(userText)) fallbackFilter = 'shorts';
+
+                        const ytData = buildYouTubeSearch(userText, fallbackFilter);
+                        const ytSearchUrl = ytData.url;
+                        const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(ytData.cleanSearch + ' live')}`;
+                        const twitchSearchUrl = `https://www.twitch.tv/search?term=${encodeURIComponent(ytData.cleanSearch)}`;
+
+                        // Auto-open YouTube if user specifically asked for stream or YouTube
+                        if (/\b(stream|youtube|video|watch|live|shorts?)\b/i.test(userText)) {
+                            openInIncognitoTab(ytSearchUrl);
+                        }
+
+                        chatBox.innerHTML += `
+                            <div class="bg-gradient-to-r from-amber-950/40 via-red-950/30 to-black/50 border border-amber-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                        Model Filter Intercepted &bull; Live Filter Activated
+                                    </span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">${escapeHtml(ytData.filterLabel || 'Auto-Bypassed')}</span>
+                                </div>
+                                <div class="text-gray-300 text-xs leading-relaxed">
+                                    Local model gave a default disclaimer (<i>"${escapeHtml(rawResponse.trim())}"</i>), but ZenderByte has routed your query directly to live search:
+                                </div>
+                                <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                    <a href="${escapeHtml(ytSearchUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md">
+                                        <span>Search on YouTube (${escapeHtml(ytData.filterLabel || 'Direct')})</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                    <a href="${escapeHtml(googleSearchUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
+                                        <span>Search on Google</span>
+                                    </a>
+                                    <a href="${escapeHtml(twitchSearchUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/80 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition-all">
+                                        <span>Search on Twitch</span>
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        // Standard conversational response with active engine label
+                        const pDisplayNames = {
+                            'ollama': 'Ollama',
+                            'gemini': 'Google Gemini',
+                            'claude': 'Claude',
+                            'openai': 'ChatGPT'
+                        };
+                        const activeDisplayName = pDisplayNames[currentProvider] || 'AI';
+                        chatBox.innerHTML += `<div class="bg-white/10 p-3 rounded-lg text-sm"><b>${escapeHtml(activeDisplayName)}:</b> ${escapeHtml(rawResponse)}</div>`;
+                    }
                 }
 
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (err) {
                 hideGeneratingIndicator();
-                chatBox.innerHTML += `
-                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-2.5 rounded-lg space-y-1">
-                            <div><b>Error:</b> Could not reach Ollama at <code class="bg-black/40 px-1 rounded">${escapeHtml(endpoint)}</code></div>
-                            <div class="text-gray-400 text-[11px]">To connect local Ollama, run the following command on the terminal: <code class="text-gray-300"><input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono" readonly></code></div>
+                const host = (currentSettings.ollamaHost || 'http://localhost:11434').replace(/\/+$/, '');
+                const endpoint = (document.getElementById('ollamaUrl')?.value || `${host}/api/generate`).trim();
+
+                if (err && err.isConfigError) {
+                    chatBox.innerHTML += `
+                        <div class="text-amber-300 text-xs bg-amber-950/30 border border-amber-500/30 p-3.5 rounded-xl space-y-2.5">
+                            <div class="flex items-center justify-between font-bold">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    ${escapeHtml(err.provider)} Key Required
+                                </span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Setup Needed</span>
+                            </div>
+                            <div class="text-gray-200 text-xs">${escapeHtml(err.message)}</div>
+                            <div class="pt-1 flex items-center gap-2">
+                                <button onclick="togglePanel('settings-panel')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                    <span>Configure in Settings</span>
+                                </button>
+                                <button onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold transition-all">
+                                    <span>Switch to Ollama</span>
+                                </button>
+                            </div>
                         </div>
                     `;
+                } else if (currentProvider === 'ollama') {
+                    chatBox.innerHTML += `
+                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between font-bold">
+                                <span class="flex items-center gap-1.5 text-red-300">
+                                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    Could not reach Ollama
+                                </span>
+                                <button onclick="togglePanel('settings-panel')" class="text-purple-300 hover:text-purple-200 text-xs underline">Settings</button>
+                            </div>
+                            <div class="text-gray-300 text-[11px]">Failed connecting to <code class="bg-black/50 px-1 py-0.5 rounded text-gray-200 font-mono">${escapeHtml(endpoint)}</code></div>
+                            <div class="text-gray-400 text-[11px]">To connect local Ollama, run this in your terminal:</div>
+                            <input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono text-gray-200" readonly>
+                            <div class="text-gray-400 text-[11px] pt-1">Using a phone or tablet? Set Ollama port &amp; your LAN IP in <button onclick="togglePanel('settings-panel')" class="text-purple-400 hover:underline">Settings</button>, or switch to Gemini/Claude/OpenAI cloud models.</div>
+                        </div>
+                    `;
+                } else {
+                    chatBox.innerHTML += `
+                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
+                            <div class="flex items-center justify-between font-bold">
+                                <span class="text-red-300">❌ Error from ${escapeHtml(currentProvider.toUpperCase())}</span>
+                                <button onclick="togglePanel('settings-panel')" class="text-purple-300 hover:text-purple-200 text-xs underline">Settings</button>
+                            </div>
+                            <div class="text-gray-300 text-xs">${escapeHtml(err.message || 'Request failed')}</div>
+                            <div class="pt-1 flex items-center gap-2">
+                                <button onclick="togglePanel('settings-panel')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold">Verify Key &amp; Model</button>
+                                <button onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold">Switch to Ollama</button>
+                            </div>
+                        </div>
+                    `;
+                }
                 chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
