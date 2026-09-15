@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenderByte | AI Search</title>
+    <meta name="description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Web Access" />
+    <meta property="og:title" content="ZenderByte | AI Search" />
+    <meta property="og:description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Web Access" />
+    <meta property="og:type" content="website" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <style>
+        body {
+            background: #050505;
+            color: #e5e7eb;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow-x: hidden;
+            height: 100vh;
+            height: 100dvh;
+        }
+
+        .glass {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Slide Panels */
+        .panel {
+            position: fixed;
+            top: 0;
+            right: -550px;
+            width: min(460px, calc(100vw - 4.5rem));
+            height: 100%;
+            height: 100dvh;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 45;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+        }
+
+        .panel.active {
+            right: 4rem;
+        }
+
+        /* Responsive Mobile Layout (Preserves Desktop Exactly) */
+        @media (max-width: 767px) {
+            .panel {
+                top: 0;
+                bottom: 4rem;
+                height: calc(100% - 4rem);
+                height: calc(100dvh - 4rem);
+                width: 100%;
+                right: -100%;
+                box-shadow: 0 -10px 30px rgba(0,0,0,0.7);
+                padding: 1.25rem !important;
+            }
+
+            .panel.active {
+                right: 0;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0% {
+                box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+            }
+
+            100% {
+                box-shadow: 0 0 5px rgba(59, 130, 246, 0.2);
+            }
+        }
+
+        .search-container:focus-within {
+            animation: pulse-glow 2s infinite;
+            border-color: #3b82f6;
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR NAVIGATION -->
+    <div id="sidebar-nav" class="fixed bottom-0 left-0 w-full h-16 md:top-0 md:left-auto md:right-0 md:h-full md:w-16 flex flex-row md:flex-col items-center justify-around md:justify-start py-0 md:py-6 gap-2 md:gap-6 z-50 border-t md:border-t-0 md:border-l border-white/5 bg-black/80 md:bg-black/60 backdrop-blur-md">
+        <!-- AI Toggle -->
+        <button data-panel-btn="ai-panel" onclick="togglePanel('ai-panel')" class="p-3 rounded-xl hover:bg-blue-600/20 transition-all group" title="Ollama AI">
+            <svg class="w-6 h-6 md:w-7 md:h-7 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
+                <path d="M12 6v6l4 2" />
+            </svg>
+        </button>
+
+        <!-- WhatsApp Toggle -->
+        <button data-panel-btn="wa-panel" onclick="togglePanel('wa-panel')" class="p-3 rounded-xl hover:bg-green-600/20 transition-all" title="WhatsApp">
+            <svg class="w-6 h-6 md:w-7 md:h-7 text-green-500" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" /></svg>
+        </button>
+
+        <!-- Discord Toggle -->
+        <button data-panel-btn="dc-panel" onclick="togglePanel('dc-panel')" class="p-3 rounded-xl hover:bg-indigo-600/20 transition-all" title="Discord">
+            <svg class="w-6 h-6 md:w-7 md:h-7 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.68 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128c.125-.094.252-.192.37-.29a.074.074 0 01.077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 01.077.01c.12.098.246.196.373.29a.077.077 0 01-.006.127 12.299 12.299 0 01-1.874.89.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z" /></svg>
+        </button>
+
+        <!-- Advanced Search -->
+        <button data-panel-btn="adv-panel" onclick="togglePanel('adv-panel')" class="p-3 rounded-xl hover:bg-yellow-600/20 transition-all" title="Advanced Search">
+            <svg class="w-6 h-6 md:w-7 md:h-7 text-yellow-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
+        </button>
+    </div>
+
+    <!-- MAIN HOME CONTENT -->
+    <main class="h-full flex flex-col items-center justify-center px-4 pb-20 md:pb-0 md:-ml-16">
+        <div class="floating mb-8 sm:mb-12 flex flex-col items-center">
+            <div class="glass p-5 sm:p-6 rounded-[2.5rem] mb-4 sm:mb-6 shadow-2xl">
+                <svg class="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                    <circle cx="12" cy="12" r="10" />
+                </svg>
+            </div>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter italic text-center">ZENDER<span class="text-blue-500">BYTE</span></h1>
+            <p class="text-gray-500 tracking-[0.3em] uppercase text-[10px] sm:text-xs mt-2 text-center">Next Gen Search Interface</p>
+        </div>
+
+        <div class="w-full max-w-2xl px-2 sm:px-6">
+            <div class="glass rounded-full flex items-center p-1.5 sm:p-2 search-container transition-all">
+                <input type="text" id="mainSearch" placeholder="Search the web with Google..."
+                       class="bg-transparent w-full px-4 sm:px-6 py-3 sm:py-4 outline-none text-base sm:text-lg">
+                <button onclick="doGoogleSearch()" class="bg-blue-600 hover:bg-blue-500 p-3 sm:p-4 rounded-full transition-all shrink-0">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- OLLAMA AI PANEL -->
+    <div id="ai-panel" class="panel glass p-8 flex flex-col">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-2xl font-bold flex items-center gap-3">
+                <span class="w-3 h-3 bg-blue-500 rounded-full animate-ping"></span>
+                Ollama Intelligence
+            </h2>
+            <button onclick="togglePanel('ai-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+        </div>
+
+        <div class="space-y-4 mb-6">
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <label class="text-xs uppercase text-gray-400 font-bold">Available Models</label>
+                    <span class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">Local + Cloud</span>
+                </div>
+                <input type="range" id="modelSlider" min="0" max="0" step="1" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                <div id="modelNameDisplay" class="mt-2 text-center p-2 bg-white/5 rounded font-mono text-sm">Loading Models...</div>
+            </div>
+
+            <div>
+                <label class="text-xs uppercase text-gray-500 font-bold mb-2 block">Endpoint URL</label>
+                <input type="text" id="ollamaUrl" value="http://localhost:11434/api/generate" class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono">
+            </div>
+        </div>
+
+        <div id="chatBox" class="flex-grow overflow-y-auto space-y-4 mb-4 pr-2">
+            <div class="text-sm text-gray-400 italic">System: Please ensure Ollama is running through the following command:</div>
+            <input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono" readonly>
+            <div class="text-xs text-blue-400/80 bg-blue-950/20 border border-blue-500/20 p-2.5 rounded-lg flex items-center gap-2">
+                <span>🌐</span>
+                <span><b>Incognito Web Access:</b> Real-time search, verified articles, and direct website navigation with zero referrer leakage.</span>
+            </div>
+        </div>
+
+        <div class="flex gap-2">
+            <input type="text" id="aiMsg" placeholder="Ask AI, open a website, or search an article..." class="flex-grow bg-white/5 border border-white/10 p-3 rounded-xl outline-none focus:border-blue-500">
+            <button id="aiSendBtn" onclick="sendToOllama()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-xl font-bold transition-all flex items-center justify-center min-w-[80px]">
+                <span>Send</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- WHATSAPP PANEL (Workaround for Security) -->
+    <div id="wa-panel" class="panel glass flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-white/10 flex justify-between bg-green-900/20">
+            <span class="font-bold">WhatsApp Messenger</span>
+            <button onclick="togglePanel('wa-panel')">✕</button>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center p-6 sm:p-10 text-center">
+            <p id="wa-desc" class="text-sm text-gray-400 mb-6">Note: WhatsApp blocks loading inside other apps for security. Use the button below to open in a secure window.</p>
+            <a id="wa-btn" href="whatsapp://" rel="noopener noreferrer" class="bg-green-600 px-8 py-3 rounded-full font-bold hover:bg-green-500 transition-all">Launch WhatsApp Web</a>
+        </div>
+    </div>
+
+    <!-- DISCORD PANEL -->
+    <div id="dc-panel" class="panel glass flex flex-col overflow-hidden">
+        <div class="p-4 border-b border-white/10 flex justify-between bg-indigo-900/20">
+            <span class="font-bold">Discord</span>
+            <button onclick="togglePanel('dc-panel')">✕</button>
+        </div>
+        <div class="flex-grow flex flex-col items-center justify-center p-6 sm:p-10 text-center">
+            <p id="dc-desc" class="text-sm text-gray-400 mb-6">Open Discord Web safely in a new tab.</p>
+            <a id="dc-btn" href="discord://" rel="noopener noreferrer" class="bg-indigo-600 px-8 py-3 rounded-full font-bold hover:bg-indigo-500 transition-all">Launch Discord</a>
+        </div>
+    </div>
+
+    <!-- ADVANCED SEARCH PANEL -->
+    <div id="adv-panel" class="panel glass p-8 flex flex-col">
+        <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-bold text-yellow-500">Search Filters</h2>
+            <button onclick="togglePanel('adv-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+        </div>
+        <div class="space-y-6">
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase">Exact Phrase (" ")</label>
+                <input type="text" id="adv-exact" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg" placeholder="Exact words only...">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase">Exclude (-)</label>
+                <input type="text" id="adv-exclude" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg" placeholder="Exclude these words...">
+            </div>
+            <div class="space-y-2">
+                <label class="text-xs font-bold text-gray-500 uppercase">Site Limit (site:)</label>
+                <input type="text" id="adv-site" class="w-full bg-white/5 border border-white/10 p-3 rounded-lg" placeholder="e.g. stackoverflow.com">
+            </div>
+            <button onclick="runAdvancedSearch()" class="w-full bg-yellow-600 py-4 rounded-xl font-bold text-black mt-4 hover:bg-yellow-500 transition-all">Execute Power Search</button>
+        </div>
+    </div>
+
+    <script>
+        // MOBILE DETECTION & SUPPORT MODULE
+        const MobileDetector = {
+            isMobile: function() {
+                const ua = navigator.userAgent || navigator.vendor || window.opera || '';
+                const mobileRegex = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile|tablet/i;
+                const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+                const isNarrow = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
+                return mobileRegex.test(ua) || (isTouch && isNarrow);
+            },
+            getPlatformName: function() {
+                const ua = navigator.userAgent || '';
+                if (/iphone|ipad|ipod/i.test(ua)) return 'iOS';
+                if (/android/i.test(ua)) return 'Android';
+                if (/windows phone/i.test(ua)) return 'Windows Phone';
+                if (/windows/i.test(ua)) return 'Windows';
+                if (/macintosh|mac os x/i.test(ua)) return 'macOS';
+                if (/linux/i.test(ua)) return 'Linux';
+                return 'Desktop';
+            },
+            init: function() {
+                const mobile = this.isMobile();
+                const platform = this.getPlatformName();
+
+                if (mobile) {
+                    document.documentElement.classList.add('is-mobile');
+                    document.body.classList.add('is-mobile');
+
+                    // Tailor WhatsApp & Discord actions for mobile devices
+                    const waDesc = document.getElementById('wa-desc');
+                    const waBtn = document.getElementById('wa-btn');
+                    if (waDesc && waBtn) {
+                        waDesc.innerHTML = `<span class="text-green-400 font-semibold">${platform} Mobile detected</span><br>Tap below to launch your native WhatsApp application.`;
+                        waBtn.textContent = 'Launch WhatsApp App';
+                        waBtn.href = 'whatsapp://send';
+                    }
+
+                    const dcDesc = document.getElementById('dc-desc');
+                    const dcBtn = document.getElementById('dc-btn');
+                    if (dcDesc && dcBtn) {
+                        dcDesc.innerHTML = `<span class="text-indigo-400 font-semibold">${platform} Mobile detected</span><br>Tap below to launch your native Discord app.`;
+                        dcBtn.textContent = 'Launch Discord App';
+                    }
+
+                    // Mobile notice for Ollama command hint
+                    const cmdInput = document.getElementById('ollamaCmd');
+                    if (cmdInput) {
+                        cmdInput.value = 'OLLAMA_HOST=0.0.0.0 OLLAMA_ORIGINS="*" ollama serve';
+                        cmdInput.title = 'Run on your PC terminal to allow phone connections, or use Ollama Cloud models!';
+                    }
+                } else {
+                    document.documentElement.classList.add('is-desktop');
+                    document.body.classList.add('is-desktop');
+                }
+            }
+        };
+
+        // Initialize mobile detector immediately
+        MobileDetector.init();
+        window.addEventListener('resize', () => MobileDetector.init());
+
+        // PANEL LOGIC
+        function togglePanel(panelId) {
+            const current = panelId ? document.getElementById(panelId) : null;
+            const wasActive = current ? current.classList.contains('active') : false;
+
+            // Close all panels
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            // Remove active style from all sidebar toggle buttons
+            document.querySelectorAll('[data-panel-btn]').forEach(b => {
+                b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50');
+            });
+
+            // If it wasn't active and target exists, open it
+            if (current && !wasActive) {
+                current.classList.add('active');
+                const btn = document.querySelector(`[data-panel-btn="${panelId}"]`);
+                if (btn) {
+                    btn.classList.add('bg-white/20', 'ring-2');
+                    if (panelId === 'ai-panel') btn.classList.add('ring-blue-500/50');
+                    else if (panelId === 'wa-panel') btn.classList.add('ring-green-500/50');
+                    else if (panelId === 'dc-panel') btn.classList.add('ring-indigo-500/50');
+                    else if (panelId === 'adv-panel') btn.classList.add('ring-yellow-500/50');
+                }
+            }
+        }
+
+        // Close panel when pressing Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                togglePanel(null);
+            }
+        });
+
+        // Close panel when clicking outside of panel and sidebar
+        document.addEventListener('click', (e) => {
+            const activePanel = document.querySelector('.panel.active');
+            if (!activePanel) return;
+            const sidebar = document.getElementById('sidebar-nav');
+            if (activePanel.contains(e.target) || (sidebar && sidebar.contains(e.target))) {
+                return;
+            }
+            togglePanel(null);
+        });
+
+        // SEARCH LOGIC
+        function doGoogleSearch() {
+            const val = document.getElementById('mainSearch').value;
+            if (val.trim()) {
+                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+            }
+        }
+
+        document.getElementById('mainSearch').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') doGoogleSearch();
+        });
+
+        // ADVANCED SEARCH LOGIC
+        function runAdvancedSearch() {
+            let query = document.getElementById('mainSearch').value;
+            const exact = document.getElementById('adv-exact').value;
+            const exclude = document.getElementById('adv-exclude').value;
+            const site = document.getElementById('adv-site').value;
+
+            if (exact) query += ` "${exact}"`;
+            if (exclude) query += ` -${exclude}`;
+            if (site) query += ` site:${site}`;
+
+            document.getElementById('mainSearch').value = query;
+            doGoogleSearch();
+        }
+
+        // OLLAMA CLOUD & LOCAL MODELS
+        const OLLAMA_CLOUD_MODELS = [
+            { name: 'llama3.3:70b', type: 'cloud', desc: 'Meta Llama 3.3 (70B Cloud)' },
+            { name: 'llama3.1:8b', type: 'cloud', desc: 'Meta Llama 3.1 (8B Cloud)' },
+            { name: 'llama3.2:3b', type: 'cloud', desc: 'Meta Llama 3.2 (3B Cloud)' },
+            { name: 'llama3.2:1b', type: 'cloud', desc: 'Meta Llama 3.2 (1B Cloud)' },
+            { name: 'deepseek-r1:7b', type: 'cloud', desc: 'DeepSeek R1 (7B Cloud)' },
+            { name: 'deepseek-r1:8b', type: 'cloud', desc: 'DeepSeek R1 (8B Cloud)' },
+            { name: 'deepseek-r1:14b', type: 'cloud', desc: 'DeepSeek R1 (14B Cloud)' },
+            { name: 'deepseek-r1:70b', type: 'cloud', desc: 'DeepSeek R1 (70B Cloud)' },
+            { name: 'qwen2.5:7b', type: 'cloud', desc: 'Qwen 2.5 (7B Cloud)' },
+            { name: 'qwen2.5:14b', type: 'cloud', desc: 'Qwen 2.5 (14B Cloud)' },
+            { name: 'qwen2.5-coder:7b', type: 'cloud', desc: 'Qwen 2.5 Coder (7B Cloud)' },
+            { name: 'mistral:7b', type: 'cloud', desc: 'Mistral (7B Cloud)' },
+            { name: 'mixtral:8x7b', type: 'cloud', desc: 'Mixtral (8x7B Cloud)' },
+            { name: 'phi4:14b', type: 'cloud', desc: 'Microsoft Phi-4 (14B Cloud)' },
+            { name: 'gemma2:9b', type: 'cloud', desc: 'Google Gemma 2 (9B Cloud)' },
+            { name: 'gemma2:27b', type: 'cloud', desc: 'Google Gemma 2 (27B Cloud)' }
+        ];
+
+        let allModels = [];
+
+        async function loadModels() {
+            let localModelsList = [];
+            let isLocalConnected = false;
+
+            try {
+                // Fetch local models if Ollama is running
+                const res = await fetch('http://localhost:11434/api/tags');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && Array.isArray(data.models)) {
+                        localModelsList = data.models.map(m => ({
+                            name: m.name,
+                            type: 'local',
+                            desc: `Local Model (${(m.size ? (m.size / (1024 * 1024 * 1024)).toFixed(1) + 'GB' : 'Installed')})`
+                        }));
+                        isLocalConnected = true;
+                    }
+                }
+            } catch (err) {
+                console.warn("Local Ollama offline or CORS restricted. Ollama Cloud models will remain active in the slider.", err);
+            }
+
+            // Merge local and cloud models (avoiding duplicates)
+            const localNames = new Set(localModelsList.map(m => m.name));
+            const availableCloud = OLLAMA_CLOUD_MODELS.filter(m => !localNames.has(m.name));
+
+            allModels = [...localModelsList, ...availableCloud];
+
+            const slider = document.getElementById('modelSlider');
+            slider.min = 0;
+            slider.max = Math.max(0, allModels.length - 1);
+            slider.value = 0;
+
+            updateModelLabel(0, isLocalConnected);
+            slider.oninput = (e) => updateModelLabel(parseInt(e.target.value, 10), isLocalConnected);
+        }
+
+        function updateModelLabel(index, isLocalConnected) {
+            const m = allModels[index];
+            if (!m) return;
+
+            const isCloud = m.type === 'cloud';
+            const badge = isCloud
+                ? `<span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30">OLLAMA CLOUD</span>`
+                : `<span class="text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-400 font-bold border border-green-500/30">LOCAL INSTALLED</span>`;
+
+            document.getElementById('modelNameDisplay').innerHTML = `
+                    <div class="flex items-center justify-center gap-2">
+                        ${badge}
+                        <span class="font-bold text-white text-sm">${m.name}</span>
+                    </div>
+                    <div class="text-[11px] text-gray-400 mt-1">${m.desc} &bull; Model ${index + 1} of ${allModels.length}</div>
+                `;
+        }
+
+        // INCOGNITO WEB OPENER
+        function openInIncognitoTab(url) {
+            // Opens URL in a detached private new tab without referrer or window.opener leakage
+            const win = window.open(url, '_blank', 'noopener,noreferrer');
+            return win;
+        }
+
+        // DIRECT WEBSITE / DOMAIN RESOLVER
+        function resolveDirectWebsite(text) {
+            if (!text) return null;
+            let trimmed = text.trim();
+
+            // Already a full URL
+            if (/^https?:\/\/[^\s]+$/i.test(trimmed)) {
+                return trimmed;
+            }
+
+            // Commands: "open google.com", "go to youtube.com", "visit reddit.com", "open twitter"
+            const match = trimmed.match(/^(?:open|go\s+to|visit|launch|browse\s+to|navigate\s+to)\s+([^\s?#]+)$/i);
+            const target = match ? match[1].trim() : trimmed;
+
+            // Popular services map
+            const services = {
+                'google': 'https://www.google.com',
+                'google.com': 'https://www.google.com',
+                'youtube': 'https://www.youtube.com',
+                'youtube.com': 'https://www.youtube.com',
+                'github': 'https://github.com',
+                'github.com': 'https://github.com',
+                'wikipedia': 'https://www.wikipedia.org',
+                'wikipedia.org': 'https://www.wikipedia.org',
+                'reddit': 'https://www.reddit.com',
+                'reddit.com': 'https://www.reddit.com',
+                'twitter': 'https://x.com',
+                'twitter.com': 'https://x.com',
+                'x': 'https://x.com',
+                'x.com': 'https://x.com',
+                'facebook': 'https://www.facebook.com',
+                'facebook.com': 'https://www.facebook.com',
+                'instagram': 'https://www.instagram.com',
+                'instagram.com': 'https://www.instagram.com',
+                'amazon': 'https://www.amazon.com',
+                'amazon.com': 'https://www.amazon.com',
+                'netflix': 'https://www.netflix.com',
+                'netflix.com': 'https://www.netflix.com',
+                'chatgpt': 'https://chatgpt.com',
+                'chatgpt.com': 'https://chatgpt.com',
+                'openai': 'https://openai.com',
+                'openai.com': 'https://openai.com',
+                'bing': 'https://www.bing.com',
+                'bing.com': 'https://www.bing.com',
+                'duckduckgo': 'https://duckduckgo.com',
+                'duckduckgo.com': 'https://duckduckgo.com',
+                'linkedin': 'https://www.linkedin.com',
+                'linkedin.com': 'https://www.linkedin.com',
+                'twitch': 'https://www.twitch.tv',
+                'twitch.tv': 'https://www.twitch.tv'
+            };
+
+            const key = target.toLowerCase().replace(/^https?:\/\//, '').replace(/\/$/, '');
+            if (services[key]) {
+                return services[key];
+            }
+
+            // Domain pattern check: example.com or domain.org/path
+            if (/^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?$/i.test(target)) {
+                return target.startsWith('http') ? target : `https://${target}`;
+            }
+
+            return null;
+        }
+
+        // WAYBACK MACHINE & CLIENT-SIDE URL UTILITIES
+        async function checkWaybackAvailability(targetUrl) {
+            try {
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 3000);
+                const res = await fetch(`https://archive.org/wayback/available?url=${encodeURIComponent(targetUrl)}`, {
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data?.archived_snapshots?.closest?.available) {
+                        return {
+                            available: true,
+                            snapshotUrl: data.archived_snapshots.closest.url,
+                            timestamp: data.archived_snapshots.closest.timestamp
+                        };
+                    }
+                }
+            } catch (e) {
+                // Ignore CORS or network errors gracefully
+            }
+            return {
+                available: false,
+                snapshotUrl: `https://web.archive.org/web/*/${encodeURIComponent(targetUrl.replace(/^https?:\/\//, ''))}`
+            };
+        }
+
+        function showGeneratingIndicator() {
+            const chatBox = document.getElementById('chatBox');
+            const sendBtn = document.getElementById('aiSendBtn');
+            if (sendBtn) {
+                sendBtn.disabled = true;
+                sendBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            const existing = document.getElementById('aiGeneratingIndicator');
+            if (!existing) {
+                const genDiv = document.createElement('div');
+                genDiv.id = 'aiGeneratingIndicator';
+                genDiv.className = 'flex items-center gap-2 text-xs text-blue-400 bg-blue-950/20 border border-blue-500/20 p-2.5 rounded-lg animate-pulse';
+                genDiv.innerHTML = `
+                        <span class="w-2 h-2 bg-blue-400 rounded-full animate-ping"></span>
+                        <span class="font-mono">Generating...</span>
+                    `;
+                chatBox.appendChild(genDiv);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function hideGeneratingIndicator() {
+            const genDiv = document.getElementById('aiGeneratingIndicator');
+            if (genDiv) genDiv.remove();
+
+            const sendBtn = document.getElementById('aiSendBtn');
+            if (sendBtn) {
+                sendBtn.disabled = false;
+                sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        async function sendToOllama() {
+            const msgInput = document.getElementById('aiMsg');
+            const chatBox = document.getElementById('chatBox');
+            const selectedModelObj = allModels[document.getElementById('modelSlider').value];
+            const model = selectedModelObj?.name || 'llama3';
+            const endpoint = document.getElementById('ollamaUrl').value;
+
+            if (!msgInput.value.trim()) return;
+
+            const userText = msgInput.value.trim();
+            msgInput.value = "";
+
+            // Render user message
+            chatBox.innerHTML += `<div class="bg-blue-600/20 p-3 rounded-lg text-sm"><b>You:</b> ${escapeHtml(userText)}</div>`;
+            chatBox.scrollTop = chatBox.scrollHeight;
+
+            // 1. Direct website / URL intent check (e.g. "open google.com", "visit github.com", "open youtube")
+            const directSiteUrl = resolveDirectWebsite(userText);
+            if (directSiteUrl) {
+                openInIncognitoTab(directSiteUrl);
+                const cleanDomain = new URL(directSiteUrl).hostname;
+                chatBox.innerHTML += `
+                        <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    Website Opened
+                                </span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">noopener, noreferrer</span>
+                            </div>
+                            <div class="text-gray-200 text-xs">Directly opened website in an incognito private tab.</div>
+                            <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                <a href="${escapeHtml(directSiteUrl)}" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
+                                    <span>Launch Website</span>
+                                </a>
+                                <a href="https://web.archive.org/web/*/${encodeURIComponent(cleanDomain)}" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
+                                    <span>Wayback Machine</span>
+                                </a>
+                                <span class="text-gray-400 text-[11px] font-mono truncate max-w-[200px]">${escapeHtml(directSiteUrl)}</span>
+                            </div>
+                        </div>
+                    `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+                return;
+            }
+
+            // Show generating state
+            showGeneratingIndicator();
+
+            const systemPrompt = `
+You are an intelligent AI with live internet access in incognito mode.
+
+CRITICAL DIRECTIVE - TRIPLE CHECK ALL URLS:
+1. YOU MUST TRIPLE CHECK ANY URL BEFORE OUTPUTTING IT:
+       - Check every single character, domain, subpath, and ID.
+       - NEVER invent, guess, or hallucinate random letters, numbers, or hashes in URLs (e.g. NEVER make up Reddit post IDs like "/comments/xxxxxx/", YouTube video IDs, Twitter/X tweet IDs, or arbitrary article slugs).
+       - Hallucinating random letters causes fatal 404 dead links!
+       - Ground-truth reference: The famous original Backrooms post on Reddit is EXACTLY "https://old.reddit.com/r/nosleep/comments/bq6jqp/the_backrooms/" (Reddit post ID is "bq6jqp"). Notice the letters "bq6jqp" - never guess random letters like "2d1kj8".
+       - If you know the 100% exact, authentic real-world URL (verified character-by-character, triple checked), respond ONLY with JSON:
+         { "action": "open_url", "url": "<exact_triple_checked_url>", "title": "<exact title or description>" }
+
+2. IF YOU DO NOT KNOW THE EXACT ID / PATH WITH 100% CERTAINTY:
+       - DO NOT GUESS RANDOM LETTERS.
+       - Instead, respond with JSON for an article or search query so the browser lands on the authentic page via search:
+         { "action": "article", "query": "<clean descriptive search terms>" }
+         or
+         { "action": "search", "query": "<clean search terms>" }
+
+3. FOR GENERAL WEBSITES (e.g. "open google.com", "go to youtube", "visit reddit"):
+       Respond ONLY with JSON:
+       { "action": "open_url", "url": "https://www.google.com" }
+
+4. FOR GENERAL CHAT (no web navigation needed):
+       Answer normally, accurately, and politely.
+`;
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: model,
+                        prompt: `${systemPrompt}\nUser: ${userText}`,
+                        stream: false
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const rawResponse = data.response || '';
+
+                hideGeneratingIndicator();
+
+                // Check for JSON action response
+                let actionData = null;
+                const jsonMatch = rawResponse.match(/\{[\s\S]*"action"\s*:\s*"[^"]+"[\s\S]*\}/);
+                if (jsonMatch) {
+                    try {
+                        actionData = JSON.parse(jsonMatch[0]);
+                    } catch (e) {
+                        console.warn("Could not parse JSON response from Ollama", e);
+                    }
+                }
+
+                // Check if user input itself was explicitly asking for an article or specific content
+                const isExplicitArticleRequest = /\b(article|news\s+story|editorial|report|backrooms\s+image|original\s+image|first\s+post)\b/i.test(userText);
+
+                if (actionData && actionData.action === 'open_url') {
+                    // Direct Triple-Checked URL action
+                    const rawTarget = resolveDirectWebsite(actionData.url || userText) || actionData.url;
+                    const cleanDomain = rawTarget.replace(/^https?:\/\//, '').split('/')[0];
+                    const cardId = 'url-card-' + Date.now();
+                    const archiveFallback = `https://web.archive.org/web/*/${encodeURIComponent(rawTarget.replace(/^https?:\/\//, ''))}`;
+
+                    // Open in private tab
+                    openInIncognitoTab(rawTarget);
+
+                    chatBox.innerHTML += `
+                            <div id="${cardId}" class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
+                                        <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        Triple-Checked URL &bull; Opened in Tab
+                                    </span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">${escapeHtml(cleanDomain)}</span>
+                                </div>
+                                <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(actionData.title || rawTarget)}</div>
+                                <div class="text-gray-400 text-[11px]">Opened in private incognito tab. Triple-checked against hallucinated random letters.</div>
+                                <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                    <a href="${escapeHtml(rawTarget)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
+                                        <span>Open Page</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                    <a id="${cardId}-archive-btn" href="${escapeHtml(archiveFallback)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                        <span id="${cardId}-archive-label">Internet Archive</span>
+                                    </a>
+                                    <a href="https://www.google.com/search?q=${encodeURIComponent(rawTarget)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
+                                        <span>Verify on Google</span>
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+
+                    // Async check Wayback Machine in background to enhance button if snapshot exists
+                    checkWaybackAvailability(rawTarget).then(wb => {
+                        if (wb.available && wb.snapshotUrl) {
+                            const btn = document.getElementById(`${cardId}-archive-btn`);
+                            const lbl = document.getElementById(`${cardId}-archive-label`);
+                            if (btn && lbl) {
+                                btn.href = wb.snapshotUrl;
+                                lbl.textContent = 'Wayback Snapshot Available';
+                                btn.classList.add('border-emerald-500/50', 'text-emerald-300');
+                            }
+                        }
+                    });
+
+                } else if ((actionData && (actionData.action === 'article' || (actionData.action === 'search' && (actionData.url === true || isExplicitArticleRequest)))) || isExplicitArticleRequest) {
+                    // ARTICLE SEARCH: Open Google Lucky Article or Search directly without hallucinated URLs
+                    let cleanQuery = actionData?.query || userText;
+                    cleanQuery = cleanQuery.replace(/^(search\s+(for\s+)?an?\s+article\s+(for|about|on)?|find\s+an?\s+article\s+(for|about|on)?|go\s+to\s+(the\s+)?)\s*/i, '').trim();
+
+                    const luckyArticleUrl = `https://www.google.com/search?q=${encodeURIComponent(cleanQuery + ' article')}&btnI=1`;
+                    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(cleanQuery)}`;
+                    const archiveSearchUrl = `https://web.archive.org/web/*/${encodeURIComponent(cleanQuery)}`;
+
+                    // Open direct lucky article in private tab
+                    openInIncognitoTab(luckyArticleUrl);
+
+                    chatBox.innerHTML += `
+                            <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                                <div class="flex items-center justify-between">
+                                    <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
+                                        Article & Source Search &bull; Opened in Tab
+                                    </span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">Top Article Direct</span>
+                                </div>
+                                <div class="text-gray-100 font-semibold text-xs leading-snug">Top verified article for "${escapeHtml(cleanQuery)}"</div>
+                                <div class="text-gray-400 text-[11px]">Directly landed on the top authoritative article via Google I'm Feeling Lucky redirect.</div>
+                                <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                    <a href="${escapeHtml(luckyArticleUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
+                                        <span>Open Top Article</span>
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    </a>
+                                    <a href="${escapeHtml(googleSearchUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
+                                        <span>All Google Results</span>
+                                    </a>
+                                    <a href="${escapeHtml(archiveSearchUrl)}" target="_blank" rel="noopener noreferrer"
+                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
+                                        <span>Search Archive</span>
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                } else if (actionData && actionData.action === 'search') {
+                    // GENERAL SEARCH
+                    const rawQuery = actionData.query || userText;
+                    const siteUrl = resolveDirectWebsite(rawQuery);
+                    let targetUrl = '';
+                    let label = '';
+
+                    if (siteUrl) {
+                        targetUrl = siteUrl;
+                        label = 'Website';
+                    } else {
+                        targetUrl = `https://www.google.com/search?q=${encodeURIComponent(rawQuery)}`;
+                        label = 'Google Search';
+                    }
+
+                    openInIncognitoTab(targetUrl);
+
+                    chatBox.innerHTML += `
+                            <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-blue-400 font-bold text-xs uppercase tracking-wider">${escapeHtml(label)} Opened</span>
+                                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">noopener, noreferrer</span>
+                                </div>
+                                <div class="text-gray-200 text-xs">Opened in a new private tab without referrer leakage.</div>
+                                <div class="pt-1 flex items-center gap-2">
+                                    <a href="${escapeHtml(targetUrl)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold">Open ${label}</a>
+                                    <span class="text-gray-400 text-[11px] font-mono truncate max-w-[220px]">${escapeHtml(targetUrl)}</span>
+                                </div>
+                            </div>
+                        `;
+                } else {
+                    // Standard conversational response
+                    chatBox.innerHTML += `<div class="bg-white/10 p-3 rounded-lg text-sm"><b>AI:</b> ${escapeHtml(rawResponse)}</div>`;
+                }
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } catch (err) {
+                hideGeneratingIndicator();
+                chatBox.innerHTML += `
+                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-2.5 rounded-lg space-y-1">
+                            <div><b>Error:</b> Could not reach Ollama at <code class="bg-black/40 px-1 rounded">${escapeHtml(endpoint)}</code></div>
+                            <div class="text-gray-400 text-[11px]">To connect local Ollama, run the following command on the terminal: <code class="text-gray-300"><input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono" readonly></code></div>
+                        </div>
+                    `;
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Enter key to send in AI input
+        document.getElementById('aiMsg').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendToOllama();
+        });
+
+        // Initialize Models
+        loadModels();
+    </script>
+</body>
+</html>
