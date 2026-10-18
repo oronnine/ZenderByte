@@ -2,33 +2,64 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ZenderByte | AI Search</title>
     <meta name="description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Incognito Web Access" />
     <meta property="og:title" content="ZenderByte | AI Search" />
     <meta property="og:description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Incognito Web Access" />
     <meta property="og:type" content="website" />
 
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Tailwind CSS v3 Play CDN (Universally compatible with iOS 14, iOS 15 Safari & modern browsers) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        border: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            }
+        };
+    </script>
 
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         html {
             overflow-x: hidden;
+            width: 100%;
+            height: 100%;
+            -webkit-text-size-adjust: 100%;
         }
 
         body {
             background: #050505;
             color: #e5e7eb;
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, system-ui, sans-serif;
             overflow-x: hidden;
-            height: 100vh;
-            height: 100dvh;
+            width: 100%;
+            min-height: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            position: relative;
         }
 
         .glass {
-            background: rgba(20, 20, 20, 0.7);
+            background: rgba(20, 20, 20, 0.78);
+            -webkit-backdrop-filter: blur(20px);
             backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #sidebar-nav {
+            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(16px);
         }
 
         /* Slide Panels */
@@ -38,8 +69,10 @@
             right: -600px;
             width: min(460px, calc(100vw - 4.5rem));
             height: 100%;
-            height: 100dvh;
-            transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.4s;
+            height: 100vh;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            transition: right 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, visibility 0.35s;
             z-index: 45;
             box-shadow: none !important;
             visibility: hidden;
@@ -55,20 +88,22 @@
             box-shadow: -10px 0 30px rgba(0,0,0,0.6) !important;
         }
 
-        /* Responsive Mobile Layout (Preserves Desktop Exactly) */
+        /* Responsive Mobile Layout (iPhone 7 & Mobile Screens) */
         @media (max-width: 767px) {
             .panel {
                 top: 0;
-                bottom: 4rem;
-                height: calc(100% - 4rem);
-                height: calc(100dvh - 4rem);
+                bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+                height: auto;
+                max-height: calc(100% - 4rem - env(safe-area-inset-bottom, 0px));
                 width: 100%;
-                right: calc(-100% - 100px);
+                right: -100%;
                 box-shadow: none !important;
                 padding: 1.25rem !important;
                 visibility: hidden;
                 pointer-events: none;
                 opacity: 0;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
             }
 
             .panel.active {
@@ -78,6 +113,23 @@
                 opacity: 1;
                 box-shadow: 0 -10px 30px rgba(0,0,0,0.7) !important;
             }
+
+            #sidebar-nav {
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                height: calc(4rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            /* Prevent iOS Safari auto-zoom on input touch by enforcing 16px minimum font size */
+            input, select, textarea {
+                font-size: 16px !important;
+            }
+        }
+
+        /* Ensure SVGs don't collapse or stretch unpredictably on older WebKit */
+        svg {
+            flex-shrink: 0;
+            display: inline-block;
+            vertical-align: middle;
         }
 
         /* Animations */
@@ -123,6 +175,22 @@
             background: #333;
             border-radius: 10px;
         }
+
+        @keyframes mic-pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                transform: scale(1.08);
+                box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+            }
+        }
+
+        .mic-recording {
+            animation: mic-pulse 1.4s infinite;
+            color: #ef4444 !important;
+        }
     </style>
 </head>
 <body>
@@ -130,11 +198,24 @@
     <!-- SIDEBAR NAVIGATION -->
     <div id="sidebar-nav" class="fixed bottom-0 left-0 w-full h-16 md:top-0 md:left-auto md:right-0 md:h-full md:w-16 flex flex-row md:flex-col items-center justify-around md:justify-start py-0 md:py-6 gap-2 md:gap-6 z-50 border-t md:border-t-0 md:border-l border-white/5 bg-black/80 md:bg-black/60 backdrop-blur-md">
         <!-- AI Toggle -->
-        <button data-panel-btn="ai-panel" onclick="togglePanel('ai-panel')" class="p-3 rounded-xl hover:bg-blue-600/20 transition-all group" title="Ollama AI">
+        <button data-panel-btn="ai-panel" onclick="togglePanel('ai-panel')" class="p-3 rounded-xl hover:bg-blue-600/20 transition-all group" title="AI Chat & Assistant">
             <svg class="w-6 h-6 md:w-7 md:h-7 text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z" />
                 <path d="M12 6v6l4 2" />
             </svg>
+        </button>
+
+        <!-- Reverse Image Search Toggle -->
+        <button data-panel-btn="image-panel" onclick="togglePanel('image-panel')" class="p-3 rounded-xl hover:bg-pink-600/20 transition-all text-pink-400" title="Google Reverse Image Search (Upload or Paste)">
+            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+        </button>
+
+        <!-- Advanced Search -->
+        <button data-panel-btn="adv-panel" onclick="togglePanel('adv-panel')" class="p-3 rounded-xl hover:bg-yellow-600/20 transition-all text-yellow-500" title="Advanced Search">
+            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
         </button>
 
         <!-- WhatsApp Toggle -->
@@ -145,11 +226,6 @@
         <!-- Discord Toggle -->
         <button data-panel-btn="dc-panel" onclick="togglePanel('dc-panel')" class="p-3 rounded-xl hover:bg-indigo-600/20 transition-all" title="Discord">
             <svg class="w-6 h-6 md:w-7 md:h-7 text-indigo-400" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.68 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028 14.09 14.09 0 001.226-1.994.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128c.125-.094.252-.192.37-.29a.074.074 0 01.077-.01c3.927 1.793 8.18 1.793 12.061 0a.074.074 0 01.077.01c.12.098.246.196.373.29a.077.077 0 01-.006.127 12.299 12.299 0 01-1.874.89.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z" /></svg>
-        </button>
-
-        <!-- Advanced Search -->
-        <button data-panel-btn="adv-panel" onclick="togglePanel('adv-panel')" class="p-3 rounded-xl hover:bg-yellow-600/20 transition-all text-yellow-500" title="Advanced Search">
-            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" /></svg>
         </button>
 
         <!-- Settings Toggle -->
@@ -174,12 +250,42 @@
         </div>
 
         <div class="w-full max-w-2xl px-2 sm:px-6">
-            <div class="glass rounded-full flex items-center p-1.5 sm:p-2 search-container transition-all">
+            <div class="glass rounded-full flex items-center p-1.5 sm:p-2 search-container transition-all gap-1 sm:gap-1.5">
                 <input type="text" id="mainSearch" placeholder="Search the web with Google..."
-                       class="bg-transparent w-full px-4 sm:px-6 py-3 sm:py-4 outline-none text-base sm:text-lg">
-                <button onclick="doGoogleSearch()" class="bg-blue-600 hover:bg-blue-500 p-3 sm:p-4 rounded-full transition-all shrink-0">
+                       class="bg-transparent w-full px-3 sm:px-5 py-3 sm:py-4 outline-none text-base sm:text-lg min-w-0">
+
+                <!-- Reverse Image Search Button (Camera) -->
+                <button id="searchImageBtn" onclick="togglePanel('image-panel')" class="p-2.5 sm:p-3 text-gray-400 hover:text-pink-400 hover:bg-white/10 rounded-full transition-all shrink-0" title="Google Reverse Image Search (Paste or Upload)">
+                    <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
+
+                <!-- Voice Search Button (Microphone) -->
+                <button id="searchVoiceBtn" onclick="toggleSearchVoice()" class="p-2.5 sm:p-3 text-gray-400 hover:text-blue-400 hover:bg-white/10 rounded-full transition-all shrink-0 relative" title="Search the Web with Voice">
+                    <svg id="searchVoiceIcon" class="w-5 h-5 sm:w-6 sm:h-6 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                    <span id="searchVoicePulse" class="hidden absolute top-1 right-1 w-2.5 h-2.5 bg-red-500 rounded-full animate-ping"></span>
+                </button>
+
+                <!-- Google Search Submit Button -->
+                <button onclick="doGoogleSearch()" class="bg-blue-600 hover:bg-blue-500 p-3 sm:p-4 rounded-full transition-all shrink-0 text-white" title="Search Google">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                 </button>
+            </div>
+
+            <!-- Voice Status Banner under Search Bar -->
+            <div id="searchVoiceStatus" class="hidden mt-3 p-2.5 px-4 rounded-2xl bg-blue-950/80 border border-blue-500/40 text-xs text-blue-200 flex items-center justify-between shadow-xl">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-ping shrink-0"></span>
+                    <span id="searchVoiceStatusText" class="truncate font-medium">Listening... speak your search</span>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <button id="searchVoiceSubmitNowBtn" onclick="finishVoiceSearchNow()" class="hidden px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">Search Now</button>
+                    <button onclick="stopSearchVoice(true)" class="px-2 py-1 text-gray-400 hover:text-white rounded text-xs transition-all">Cancel</button>
+                </div>
             </div>
         </div>
     </main>
@@ -246,9 +352,33 @@
             </div>
         </div>
 
-        <div class="flex gap-2">
-            <input type="text" id="aiMsg" placeholder="Ask AI to open a website or an article." class="flex-grow bg-white/5 border border-white/10 p-3 rounded-xl outline-none focus:border-blue-500 text-sm">
-            <button id="aiSendBtn" onclick="sendToOllama()" class="bg-blue-600 hover:bg-blue-500 px-6 rounded-xl font-bold transition-all flex items-center justify-center min-w-[80px]">
+        <!-- Voice Status Banner in AI Panel -->
+        <div id="aiVoiceStatus" class="hidden mb-2 p-2 px-3 rounded-xl bg-purple-950/80 border border-purple-500/40 text-xs text-purple-200 flex items-center justify-between shadow-lg">
+            <div class="flex items-center gap-2 min-w-0">
+                <span class="w-2 h-2 bg-red-500 rounded-full animate-ping shrink-0"></span>
+                <span id="aiVoiceStatusText" class="truncate font-medium">Listening... speak to the AI</span>
+            </div>
+            <div class="flex items-center gap-2 shrink-0">
+                <label class="flex items-center gap-1.5 cursor-pointer text-[11px] text-purple-300 select-none">
+                    <input type="checkbox" id="aiVoiceAutoSend" class="accent-purple-500 w-3.5 h-3.5" checked>
+                    <span>Auto-send</span>
+                </label>
+                <button onclick="stopAiVoice(false)" class="text-[11px] text-gray-400 hover:text-white font-bold ml-1">Stop</button>
+            </div>
+        </div>
+
+        <div class="flex gap-2 items-center">
+            <div class="relative flex-grow flex items-center">
+                <input type="text" id="aiMsg" placeholder="Ask AI to open a website or an article..." class="w-full bg-white/5 border border-white/10 p-3 pr-11 rounded-xl outline-none focus:border-blue-500 text-sm">
+                <!-- AI Mic button inside input -->
+                <button id="aiVoiceBtn" onclick="toggleAiVoice()" class="absolute right-2 p-1.5 rounded-lg text-gray-400 hover:text-blue-400 hover:bg-white/10 transition-all" title="Chat with AI using your voice">
+                    <svg id="aiVoiceIcon" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                    <span id="aiVoicePulse" class="hidden absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full animate-ping"></span>
+                </button>
+            </div>
+            <button id="aiSendBtn" onclick="sendToOllama()" class="bg-blue-600 hover:bg-blue-500 px-5 sm:px-6 py-3 rounded-xl font-bold transition-all flex items-center justify-center min-w-[70px] sm:min-w-[80px]">
                 <span>Send</span>
             </button>
         </div>
@@ -262,7 +392,7 @@
         </div>
         <div class="flex-grow flex flex-col items-center justify-center p-6 sm:p-10 text-center">
             <p id="wa-desc" class="text-sm text-gray-400 mb-6">Note: WhatsApp blocks loading inside other apps for security. Use the button below to open in a secure window.</p>
-            <a id="wa-btn" href="whatsapp://" rel="noopener noreferrer" class="bg-green-600 px-8 py-3 rounded-full font-bold hover:bg-green-500 transition-all">Launch WhatsApp Web</a>
+            <a id="wa-btn" href="whatsapp://" target="_blank" rel="noopener noreferrer" class="bg-green-600 px-8 py-3 rounded-full font-bold hover:bg-green-500 transition-all">Launch WhatsApp Web</a>
         </div>
     </div>
 
@@ -274,7 +404,121 @@
         </div>
         <div class="flex-grow flex flex-col items-center justify-center p-6 sm:p-10 text-center">
             <p id="dc-desc" class="text-sm text-gray-400 mb-6">Open Discord Web safely in a new tab.</p>
-            <a id="dc-btn" href="discord://" rel="noopener noreferrer" class="bg-indigo-600 px-8 py-3 rounded-full font-bold hover:bg-indigo-500 transition-all">Launch Discord</a>
+            <a id="dc-btn" href="discord://" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 px-8 py-3 rounded-full font-bold hover:bg-indigo-500 transition-all">Launch Discord</a>
+        </div>
+    </div>
+
+    <!-- GOOGLE REVERSE IMAGE SEARCH PANEL (100% LOCAL & PRIVATE) -->
+    <div id="image-panel" class="panel glass p-6 sm:p-8 flex flex-col overflow-y-auto">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/10 shrink-0">
+            <div>
+                <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+                    <span class="p-2 rounded-xl bg-pink-500/20 text-pink-400">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </span>
+                    <span>Reverse Image Search</span>
+                </h2>
+                <p class="text-xs text-gray-400 mt-1">Google Lens &amp; Visual Search by Image</p>
+            </div>
+            <button onclick="togglePanel('image-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+        </div>
+
+        <!-- 100% Local Privacy Guarantee Notice -->
+        <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 mb-4 flex items-start gap-2.5 shrink-0">
+            <span class="text-base shrink-0">🔒</span>
+            <div class="space-y-1">
+                <div class="font-bold text-emerald-300">100% Local &amp; Private — Zero Remote Uploads</div>
+                <div class="text-[11px] text-gray-300 leading-relaxed">Pasting and uploads are handled solely in your local browser memory. Files are never stored, sent to, or routed through any proxy or backend server. Google reverse search executes directly from your browser.</div>
+            </div>
+        </div>
+
+        <!-- Drop & Paste Zone (Visible when no image selected) -->
+        <div id="imageDropZone"
+             ondragover="onImageDragOver(event)"
+             ondragleave="onImageDragLeave(event)"
+             ondrop="onImageDrop(event)"
+             class="border-2 border-dashed border-white/20 hover:border-pink-500/60 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-white/[0.02] hover:bg-pink-500/[0.04] mb-4">
+            
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30 flex items-center justify-center mb-3 text-pink-400">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+            </div>
+
+            <div class="font-bold text-sm sm:text-base text-white mb-1">Paste an image or drag &amp; drop here</div>
+            <p class="text-xs text-gray-400 mb-4 max-w-xs">Copy any image on your PC or web, then press <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-pink-300 font-mono text-[11px]">Ctrl+V</kbd> or <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-pink-300 font-mono text-[11px]">Cmd+V</kbd></p>
+
+            <label class="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl cursor-pointer shadow-lg transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                <span>Browse Image from PC</span>
+                <input type="file" id="reverseImageFileInput" accept="image/*" class="hidden" onchange="onReverseImageFileSelected(this.files)">
+            </label>
+        </div>
+
+        <!-- Image Preview Card (Visible when image is loaded) -->
+        <div id="imagePreviewContainer" class="hidden flex-col space-y-4 mb-4">
+            <div class="relative rounded-2xl overflow-hidden border border-white/20 bg-black/40 p-2 flex flex-col items-center">
+                <img id="imagePreviewImg" src="" alt="Selected image preview" draggable="true" class="max-h-60 w-auto rounded-xl object-contain shadow-2xl cursor-grab active:cursor-grabbing hover:scale-[1.01] transition-transform">
+                <div id="imagePreviewMeta" class="mt-2 text-xs text-gray-400 flex items-center gap-3 font-mono">
+                    <span id="imageMetaDimensions">-</span>
+                    <span>•</span>
+                    <span id="imageMetaSize">-</span>
+                    <span>•</span>
+                    <span id="imageMetaName" class="truncate max-w-[140px]">-</span>
+                </div>
+                <button onclick="clearSelectedImage()" class="absolute top-3 right-3 p-1.5 rounded-lg bg-black/70 hover:bg-black text-gray-300 hover:text-white transition-all text-xs flex items-center gap-1" title="Remove image">
+                    <span>✕ Clear</span>
+                </button>
+            </div>
+
+            <!-- Google Lens Search Step & Action -->
+            <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 text-xs text-blue-200 space-y-1.5">
+                <div class="flex items-center gap-2 font-semibold text-blue-300">
+                    <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-[10px] text-blue-300 border border-blue-400/30">1</span>
+                    <span>Search with Google Lens (100% Local &amp; Private)</span>
+                </div>
+                <p class="text-[11px] text-gray-300 leading-relaxed">
+                    Clicking below copies this image to your clipboard and opens official Google Lens in a new tab. Simply press <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">Ctrl+V</kbd> (or tap paste) on Google Lens to search!
+                </p>
+            </div>
+
+            <!-- Primary Google Lens Search Action Button -->
+            <button id="googleSearchActionBtn" onclick="executeGoogleReverseSearch()" class="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-pink-600 hover:from-blue-500 hover:to-pink-500 text-white font-bold rounded-xl shadow-xl transition-all flex items-center justify-center gap-2.5 text-sm sm:text-base">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span>Search with Google Lens</span>
+            </button>
+
+            <!-- Quick Utility Actions: Copy Clipboard, Save, Bing, Yandex -->
+            <div class="grid grid-cols-2 gap-2 text-xs">
+                <button onclick="copyCurrentImageToClipboard(true)" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                    <span>📋 Copy Image</span>
+                </button>
+                <button onclick="downloadSelectedImage()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                    <span>⬇️ Save Image</span>
+                </button>
+                <button onclick="openBingVisualSearch()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                    <span>🖼️ Bing Visual</span>
+                </button>
+                <button onclick="openYandexVisualSearch()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
+                    <span>🌐 Yandex Images</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Quick Tips & Paste Status -->
+        <div class="mt-auto pt-4 border-t border-white/5 text-[11px] text-gray-400 space-y-1.5">
+            <div class="flex items-center gap-1.5 text-gray-300 font-semibold">
+                <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Quick Tip:</span>
+            </div>
+            <p>You can drag the preview image directly into Google Lens, or paste any copied image using <kbd class="px-1 py-0.5 rounded bg-white/10 font-mono text-[10px]">Ctrl+V</kbd> to launch Reverse Search instantly!</p>
         </div>
     </div>
 
@@ -611,7 +855,11 @@
                 }
             },
             save: function(settings) {
-                localStorage.setItem(this.KEY, JSON.stringify(settings));
+                try {
+                    localStorage.setItem(this.KEY, JSON.stringify(settings));
+                } catch (e) {
+                    console.warn("localStorage save notice:", e);
+                }
                 this.applyToUI(settings);
             },
             applyToUI: function(s) {
@@ -926,7 +1174,7 @@
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             // Remove active style from all sidebar toggle buttons
             document.querySelectorAll('[data-panel-btn]').forEach(b => {
-                b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50', 'ring-purple-500/50');
+                b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50', 'ring-purple-500/50', 'ring-pink-500/50');
             });
 
             // If it wasn't active and target exists, open it
@@ -940,6 +1188,7 @@
                     else if (panelId === 'dc-panel') btn.classList.add('ring-indigo-500/50');
                     else if (panelId === 'adv-panel') btn.classList.add('ring-yellow-500/50');
                     else if (panelId === 'settings-panel') btn.classList.add('ring-purple-500/50');
+                    else if (panelId === 'image-panel') btn.classList.add('ring-pink-500/50');
                 }
             }
         }
@@ -962,16 +1211,24 @@
             togglePanel(null);
         });
 
-        // SEARCH LOGIC
+        // SECURE NEW TAB OPENER (Standard & Incognito)
+        function openInNewTab(url) {
+            if (!url) return null;
+            const fullUrl = url.startsWith('http') || url.startsWith('//') ? url : `https://${url}`;
+            const win = window.open(fullUrl, '_blank', 'noopener,noreferrer');
+            return win;
+        }
+
+        // SEARCH LOGIC (Always opens in a new tab)
         function doGoogleSearch() {
             const val = document.getElementById('mainSearch').value;
             if (!val.trim()) return;
 
             const smartNav = resolveSmartNavigation(val);
             if (smartNav) {
-                window.location.href = smartNav.url;
+                openInNewTab(smartNav.url);
             } else {
-                window.location.href = `https://www.google.com/search?q=${encodeURIComponent(val)}`;
+                openInNewTab(`https://www.google.com/search?q=${encodeURIComponent(val)}`);
             }
         }
 
@@ -1389,7 +1646,7 @@
             }
         }
 
-        function showGeneratingIndicator() {
+        function updateGeneratingIndicator(step, totalSteps, title, detail) {
             const chatBox = document.getElementById('chatBox');
             const sendBtn = document.getElementById('aiSendBtn');
             if (sendBtn) {
@@ -1406,18 +1663,36 @@
             };
             const pName = providerNames[currentSettings.provider] || 'AI';
 
-            const existing = document.getElementById('aiGeneratingIndicator');
-            if (!existing) {
-                const genDiv = document.createElement('div');
+            let genDiv = document.getElementById('aiGeneratingIndicator');
+            if (!genDiv) {
+                genDiv = document.createElement('div');
                 genDiv.id = 'aiGeneratingIndicator';
-                genDiv.className = 'flex items-center gap-2 text-xs text-purple-400 bg-purple-950/20 border border-purple-500/20 p-2.5 rounded-lg animate-pulse';
-                genDiv.innerHTML = `
-                        <span class="w-2 h-2 bg-purple-400 rounded-full animate-ping"></span>
-                        <span class="font-mono">Thinking with ${escapeHtml(pName)}...</span>
-                    `;
+                genDiv.className = 'border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-blue-950/30 to-black/50 p-3 rounded-xl text-xs space-y-1.5 transition-all shadow-lg';
                 chatBox.appendChild(genDiv);
-                chatBox.scrollTop = chatBox.scrollHeight;
             }
+
+            const stepBadge = step && totalSteps ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">${step}/${totalSteps}</span>` : '';
+            genDiv.innerHTML = `
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-2">
+                        <span class="relative flex h-2.5 w-2.5">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-purple-500"></span>
+                        </span>
+                        <span class="font-semibold text-purple-200 font-mono text-xs">${escapeHtml(title || `Researching with ${pName}...`)}</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        ${stepBadge}
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">${escapeHtml(pName)}</span>
+                    </div>
+                </div>
+                ${detail ? `<div class="text-[11px] text-gray-300 pl-4 border-l border-purple-500/30 font-sans">${escapeHtml(detail)}</div>` : ''}
+            `;
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function showGeneratingIndicator() {
+            updateGeneratingIndicator(1, 3, "Browsing & Analyzing...", "Initializing live search and authentic sources");
         }
 
         function hideGeneratingIndicator() {
@@ -1428,6 +1703,493 @@
             if (sendBtn) {
                 sendBtn.disabled = false;
                 sendBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        // Render clean formatted markdown with automatic Hebrew/RTL & table detection
+        function renderCleanMarkdown(text) {
+            if (!text) return '';
+            const isHebrew = /[\u0590-\u05FF]/.test(text);
+            const isArabic = /[\u0600-\u06FF]/.test(text);
+            const isRTL = isHebrew || isArabic;
+            const dirAttr = isRTL ? 'dir="rtl" class="text-right"' : 'dir="ltr" class="text-left"';
+
+            let formatted = escapeHtml(text)
+                .replace(/^### (.*$)/gim, '<div class="font-bold text-sm text-blue-300 mt-2.5 mb-1">$1</div>')
+                .replace(/^## (.*$)/gim, '<div class="font-bold text-base text-blue-200 mt-3 mb-1.5">$1</div>')
+                .replace(/^# (.*$)/gim, '<div class="font-bold text-lg text-white mt-3.5 mb-2">$1</div>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong class="text-white font-semibold">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em class="text-gray-300 italic">$1</em>')
+                .replace(/^\s*[-*•]\s+(.*$)/gim, '<div class="flex items-start gap-1.5 my-1"><span class="text-blue-400 mt-0.5">•</span><span>$1</span></div>')
+                .replace(/\n\n/g, '<div class="h-2"></div>')
+                .replace(/\n/g, '<br/>');
+
+            return `<div ${dirAttr} class="space-y-1 text-xs sm:text-sm text-gray-200 leading-relaxed font-sans">${formatted}</div>`;
+        }
+
+        // SILENT INCOGNITO WEB SEARCH ENGINE (Purely client-side, zero trace in user history, detached requests)
+        async function silentIncognitoSearch(query) {
+            const cleanQuery = query.trim();
+            const results = [];
+            const isHebrew = /[\u0590-\u05FF]/.test(cleanQuery);
+            const isArabic = /[\u0600-\u06FF]/.test(cleanQuery);
+            const langCode = isHebrew ? 'he' : (isArabic ? 'ar' : 'en');
+
+            // 1. Multi-language Wikipedia API Search (Direct client-side CORS with origin=*)
+            try {
+                const wikiUrl = `https://${langCode}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQuery)}&utf8=&format=json&origin=*`;
+                const wikiRes = await fetch(wikiUrl, {
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer',
+                    cache: 'no-store'
+                });
+                if (wikiRes.ok) {
+                    const wikiJson = await wikiRes.json();
+                    const items = wikiJson?.query?.search || [];
+                    items.slice(0, 4).forEach(item => {
+                        const cleanSnippet = item.snippet.replace(/<[^>]+>/g, "").trim();
+                        results.push({
+                            title: item.title,
+                            url: `https://${langCode}.wikipedia.org/wiki/${encodeURIComponent(item.title.replace(/ /g, "_"))}`,
+                            snippet: cleanSnippet,
+                            source: `Wikipedia (${langCode.toUpperCase()})`,
+                            verified: true
+                        });
+                    });
+                }
+            } catch (wikiErr) {
+                console.warn("Silent Wikipedia query notice:", wikiErr);
+            }
+
+            // 2. English Wikipedia fallback for cross-lingual knowledge if non-English
+            if (langCode !== 'en' && results.length < 3) {
+                try {
+                    const enUrl = `https://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=${encodeURIComponent(cleanQuery)}&utf8=&format=json&origin=*`;
+                    const enRes = await fetch(enUrl, {
+                        credentials: 'omit',
+                        referrerPolicy: 'no-referrer',
+                        cache: 'no-store'
+                    });
+                    if (enRes.ok) {
+                        const enJson = await enRes.json();
+                        const items = enJson?.query?.search || [];
+                        items.slice(0, 2).forEach(item => {
+                            const cleanSnippet = item.snippet.replace(/<[^>]+>/g, "").trim();
+                            results.push({
+                                title: item.title,
+                                url: `https://en.wikipedia.org/wiki/${encodeURIComponent(item.title.replace(/ /g, "_"))}`,
+                                snippet: cleanSnippet,
+                                source: 'Wikipedia (EN)',
+                                verified: true
+                            });
+                        });
+                    }
+                } catch (e) {}
+            }
+
+            // 3. DuckDuckGo Instant Knowledge API (Direct client-side CORS)
+            try {
+                const ddgUrl = `https://api.duckduckgo.com/?q=${encodeURIComponent(cleanQuery)}&format=json&no_html=1&skip_disambig=1`;
+                const ddgRes = await fetch(ddgUrl, {
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer',
+                    cache: 'no-store'
+                });
+                if (ddgRes.ok) {
+                    const ddgJson = await ddgRes.json();
+                    if (ddgJson.AbstractText && ddgJson.AbstractURL) {
+                        results.unshift({
+                            title: ddgJson.Heading || cleanQuery,
+                            url: ddgJson.AbstractURL,
+                            snippet: ddgJson.AbstractText,
+                            source: ddgJson.AbstractSource || 'DuckDuckGo Knowledge',
+                            verified: true
+                        });
+                    }
+                }
+            } catch (ddgErr) {
+                console.warn("DuckDuckGo silent query notice:", ddgErr);
+            }
+
+            // 4. Autonomous Religion & Calendar Detection: Jewish Halachic Zmanim & Calendar (Hebcal API with CORS)
+            if (/זמנ|הלכ|תפיל|שחרית|מנחה|ערבית|שבת|שמע|הנץ|שקיעה|תאריך עברי|פרשת|zman|halacha/i.test(cleanQuery)) {
+                try {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    let cityCode = 'IL-Holon';
+                    let cityName = 'חולון';
+                    if (/תל אביב|tel aviv/i.test(cleanQuery)) { cityCode = 'IL-Tel Aviv'; cityName = 'תל אביב'; }
+                    else if (/ירושלים|jerusalem/i.test(cleanQuery)) { cityCode = 'IL-Jerusalem'; cityName = 'ירושלים'; }
+                    else if (/חיפה|haifa/i.test(cleanQuery)) { cityCode = 'IL-Haifa'; cityName = 'חיפה'; }
+                    else if (/באר שבע|beer sheva/i.test(cleanQuery)) { cityCode = 'IL-Beer Sheva'; cityName = 'באר שבע'; }
+                    else if (/אשדוד|ashdod/i.test(cleanQuery)) { cityCode = 'IL-Ashdod'; cityName = 'אשדוד'; }
+                    else if (/נתניה|netanya/i.test(cleanQuery)) { cityCode = 'IL-Netanya'; cityName = 'נתניה'; }
+                    else if (/בני ברק|bnei brak/i.test(cleanQuery)) { cityCode = 'IL-Bnei Brak'; cityName = 'בני ברק'; }
+                    else if (/פתח תקו|petah tikva/i.test(cleanQuery)) { cityCode = 'IL-Petah Tikva'; cityName = 'פתח תקווה'; }
+                    else if (/ראשון|rishon/i.test(cleanQuery)) { cityCode = 'IL-Rishon LeZion'; cityName = 'ראשון לציון'; }
+                    else if (/חולון|holon/i.test(cleanQuery)) { cityCode = 'IL-Holon'; cityName = 'חולון'; }
+
+                    const zRes = await fetch(`https://www.hebcal.com/zmanim?cfg=json&city=${cityCode}&date=${todayStr}`, {
+                        credentials: 'omit',
+                        referrerPolicy: 'no-referrer',
+                        cache: 'no-store'
+                    });
+                    if (zRes.ok) {
+                        const zJson = await zRes.json();
+                        const times = zJson.times || {};
+                        const formatTime = (tStr) => {
+                            if (!tStr) return '--:--';
+                            try { return new Date(tStr).toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Jerusalem' }); }
+                            catch { return tStr.slice(11, 16); }
+                        };
+
+                        const scheduleItems = [
+                            { label: 'עלות השחר', time: formatTime(times.alotHaShachar), desc: 'תחילת עמוד השחר' },
+                            { label: 'משיכיר', time: formatTime(times.misheyakir), desc: 'זמן טלית ותפילין' },
+                            { label: 'הנץ החמה', time: formatTime(times.sunrise), desc: 'זריחת השמש' },
+                            { label: 'סוף זמן שמע (גר"א)', time: formatTime(times.sofZmanShma), desc: 'שיטת הגר"א' },
+                            { label: 'סוף זמן שמע (מג"א)', time: formatTime(times.sofZmanShmaMGA), desc: 'שיטת מגן אברהם' },
+                            { label: 'סוף זמן תפילה', time: formatTime(times.sofZmanTfilla), desc: 'סוף זמן שחרית' },
+                            { label: 'חצות היום', time: formatTime(times.chatzot), desc: 'חצי היום האסטרונומי' },
+                            { label: 'מנחה גדולה', time: formatTime(times.minchaGedola), desc: 'תחילת זמן מנחה' },
+                            { label: 'פלג המנחה', time: formatTime(times.plagHaMincha), desc: 'פלג המנחה' },
+                            { label: 'שקיעת החמה', time: formatTime(times.sunset), desc: 'שקיעת גלגל החמה' },
+                            { label: 'צאת הכוכבים', time: formatTime(times.tzeit85deg || times.tzeit7083deg), desc: 'צאת ג\' כוכבים בינוניים' }
+                        ];
+
+                        results.unshift({
+                            title: `לוח זמני היום בהלכה - ${cityName} (היום)`,
+                            url: `https://www.hebcal.com/zmanim?city=${cityCode}`,
+                            snippet: `זמני היום בהלכה בעיר ${cityName}: עלות השחר ${formatTime(times.alotHaShachar)}, הנץ החמה ${formatTime(times.sunrise)}, סוף שמע ${formatTime(times.sofZmanShma)}, חצות ${formatTime(times.chatzot)}, שקיעה ${formatTime(times.sunset)}, צאת הכוכבים ${formatTime(times.tzeit85deg || times.tzeit7083deg)}.`,
+                            source: 'Hebcal Official Jewish Calendar',
+                            verified: true,
+                            structuredSchedule: {
+                                title: `לוח זמני היום בהלכה - ${cityName}`,
+                                subtitle: `נתונים רשמיים מאומתים להיום &bull; ${todayStr}`,
+                                items: scheduleItems
+                            }
+                        });
+                    }
+                } catch (zErr) {
+                    console.warn("Hebcal silent fetch notice:", zErr);
+                }
+            }
+
+            // 5. Autonomous Religion & Calendar Detection: Islamic Salah / Prayer times (Aladhan API with CORS)
+            if (/salah|prayer times|fajr|dhuhr|asr|maghrib|isha|adhan|أذان|صلاة|مواقيت/i.test(cleanQuery)) {
+                try {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    const prayerRes = await fetch(`https://api.aladhan.com/v1/timingsByCity?city=Jerusalem&country=Israel`, {
+                        credentials: 'omit',
+                        referrerPolicy: 'no-referrer',
+                        cache: 'no-store'
+                    });
+                    if (prayerRes.ok) {
+                        const pJson = await prayerRes.json();
+                        const timings = pJson?.data?.timings || {};
+                        const prayerItems = [
+                            { label: 'Fajr / الفجر', time: timings.Fajr || '--:--', desc: 'Dawn prayer' },
+                            { label: 'Sunrise / الشרוق', time: timings.Sunrise || '--:--', desc: 'Sunrise' },
+                            { label: 'Dhuhr / الظهر', time: timings.Dhuhr || '--:--', desc: 'Midday prayer' },
+                            { label: 'Asr / العصر', time: timings.Asr || '--:--', desc: 'Afternoon prayer' },
+                            { label: 'Maghrib / المغرب', time: timings.Maghrib || '--:--', desc: 'Sunset prayer' },
+                            { label: 'Isha / العشاء', time: timings.Isha || '--:--', desc: 'Night prayer' }
+                        ];
+
+                        results.unshift({
+                            title: `Islamic Prayer Times (مواقيت الصلاة)`,
+                            url: `https://aladhan.com/prayer-times`,
+                            snippet: `Fajr: ${timings.Fajr}, Sunrise: ${timings.Sunrise}, Dhuhr: ${timings.Dhuhr}, Asr: ${timings.Asr}, Maghrib: ${timings.Maghrib}, Isha: ${timings.Isha}`,
+                            source: 'Aladhan Global Islamic Timings',
+                            verified: true,
+                            structuredSchedule: {
+                                title: `مواقيت الصلاة &bull; Islamic Prayer Schedule`,
+                                subtitle: `Verified Astronomical Calculation &bull; ${todayStr}`,
+                                items: prayerItems
+                            }
+                        });
+                    }
+                } catch (pErr) {}
+            }
+
+            return results;
+        }
+
+        // SILENT INCOGNITO PAGE READER (Purely client-side, zero trace in history)
+        async function silentFetchPage(url) {
+            try {
+                if (!url) return null;
+                const cleanUrl = url.trim();
+
+                // If URL is Wikipedia, fetch directly via Wikipedia REST API (CORS enabled)
+                const wikiMatch = cleanUrl.match(/https?:\/\/([a-z]{2,3})\.wikipedia\.org\/wiki\/([^#?]+)/i);
+                if (wikiMatch) {
+                    const lang = wikiMatch[1];
+                    const pageTitle = wikiMatch[2];
+                    const res = await fetch(`https://${lang}.wikipedia.org/api/rest_v1/page/summary/${pageTitle}`, {
+                        credentials: 'omit',
+                        referrerPolicy: 'no-referrer',
+                        cache: 'no-store'
+                    });
+                    if (res.ok) {
+                        const json = await res.json();
+                        return {
+                            url: cleanUrl,
+                            title: json.title || 'Wikipedia',
+                            fullText: json.extract || ''
+                        };
+                    }
+                }
+
+                // For general web pages, fetch via open CORS proxy and sanitize directly in browser DOM
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(cleanUrl)}`;
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 6000);
+                const res = await fetch(proxyUrl, {
+                    signal: controller.signal,
+                    credentials: 'omit',
+                    referrerPolicy: 'no-referrer',
+                    cache: 'no-store'
+                });
+                clearTimeout(timeoutId);
+
+                if (res.ok) {
+                    const htmlText = await res.text();
+                    const doc = new DOMParser().parseFromString(htmlText, 'text/html');
+                    // Remove scripts, styles, iframes
+                    doc.querySelectorAll('script, style, iframe, noscript, nav, footer, header').forEach(el => el.remove());
+                    const pageTitle = doc.querySelector('title')?.innerText || doc.querySelector('h1')?.innerText || cleanUrl;
+                    const pageBodyText = (doc.body?.innerText || '')
+                        .replace(/\s+/g, ' ')
+                        .trim()
+                        .slice(0, 4000);
+
+                    return {
+                        url: cleanUrl,
+                        title: pageTitle.trim(),
+                        fullText: pageBodyText
+                    };
+                }
+            } catch (err) {
+                console.warn("Silent client-side page reader notice:", err);
+            }
+            return null;
+        }
+
+        // Autonomous Universal AI Researcher & Summarizer
+        async function performAIResearch(userText, currentSettings, customUrl = null) {
+            const chatBox = document.getElementById('chatBox');
+            const providerNames = {
+                'ollama': 'Ollama',
+                'gemini': 'Google Gemini',
+                'claude': 'Claude',
+                'openai': 'ChatGPT'
+            };
+            const currentProvider = currentSettings.provider || 'ollama';
+            const activeDisplayName = providerNames[currentProvider] || 'AI';
+
+            try {
+                // Step 1: Silent Incognito Web Search
+                updateGeneratingIndicator(1, 3, `Searching silently: "${userText.slice(0, 30)}..."`, "Incognito research & fact discovery (history untouched)");
+
+                const searchResults = await silentIncognitoSearch(userText);
+
+                // If user asked to inspect a specific website or validate a URL
+                let customPageData = null;
+                if (customUrl) {
+                    updateGeneratingIndicator(2, 3, `Inspecting URL silently: ${customUrl.slice(0, 35)}...`, "Sanitizing and validating page contents in background");
+                    customPageData = await silentFetchPage(customUrl);
+                }
+
+                // Step 2: Cognitive Thinking & Cross-Checking
+                updateGeneratingIndicator(2, 3, "Cognitive thinking & validation...", "Reasoning through intent, cultural context & verified facts");
+
+                const todayIso = new Date().toISOString().split('T')[0];
+                let discoveredSchedule = null;
+
+                // Build rich grounding context from silent searches
+                let groundingText = `AUTHENTIC DISCOVERED REAL-WORLD WEB DATA:\n`;
+                groundingText += `- User Inquiry: "${userText}"\n`;
+                groundingText += `- Real-World Date Today: ${todayIso} (Current Year: ${new Date().getFullYear()})\n`;
+
+                if (customPageData?.fullText) {
+                    groundingText += `- Validated Content extracted from ${customPageData.url}:\nTitle: ${customPageData.title}\n${customPageData.fullText.slice(0, 3000)}\n`;
+                }
+
+                if (searchResults.length > 0) {
+                    groundingText += `- Discovered Authoritative Sources:\n`;
+                    searchResults.slice(0, 5).forEach((r, i) => {
+                        groundingText += `  [${i + 1}] ${r.title} (${r.source}): ${r.snippet} (URL: ${r.url})\n`;
+                        if (r.structuredSchedule && !discoveredSchedule) {
+                            discoveredSchedule = r.structuredSchedule;
+                        }
+                    });
+                }
+
+                // Step 3: Synthesis prompt with AI
+                updateGeneratingIndicator(3, 3, `Synthesizing answer with ${activeDisplayName}...`, "Formulating exhaustive, verified summary to save user time");
+
+                const universalSystemPrompt = `
+You are ZenderByte Autonomous AI Research & Browse Engine (functioning with the intelligence, depth, and clarity of Google AI Overviews and Perplexity).
+Your mission is to save the user's precious time by taking ANY query in ANY language, thinking through its context, consulting authentic web findings, and synthesizing a comprehensive, accurate, and crystal-clear answer.
+
+UNIVERSAL RELIGIOUS, CULTURAL & MULTILINGUAL INTELLIGENCE:
+You possess complete, respectful, and authoritative knowledge of all global religions, calendars, and traditions:
+1. JUDAISM (יהדות והלכה):
+   - Profound understanding of Halacha and the concept of "זמני היום" (Zmanim): the daily halachic schedule derived from the sun's position for fulfilling time-bound commandments (Mitzvot).
+   - Knowledge of all daily times: עלות השחר (Dawn), זמן ציצית ותפילין/משיכיר (Misheyakir), הנץ החמה (Sunrise), סוף זמן קריאת שמע לפי הגר"א ולפי מגן אברהם (End of Shema), סוף זמן תפילת שחרית (End of Morning Prayer), חצות היום (Midday/Chatzot), מנחה גדולה ומנחה קטנה (Early and Late Afternoon Prayers), פלג המנחה (Plag HaMincha), שקיעת החמה (Sunset/Shkia), and צאת הכוכבים (Tzeit HaKochavim / Nightfall).
+   - Understanding of the Hebrew Calendar (לוח עברי), current Hebrew month and year, weekly Torah portion (פרשת השבוע), Shabbat candle lighting (כניסת שבת) and Havdalah (יציאת שבת), fast days, and Jewish holidays.
+2. ISLAM (الإسلام ومواقيت الصلاة):
+   - Profound understanding of the 5 daily prayers (Salah/Namaz): Fajr, Sunrise/Shuruq, Dhuhr, Asr (Shafi'i/Standard and Hanafi calculations), Maghrib, Isha, Qiyam al-Layl/Tahajjud.
+   - Understanding of the Islamic Hijri calendar, Suhur/Imsak & Iftar during Ramadan, Friday Jummah prayers, and Eid.
+3. CHRISTIANITY (Liturgical Seasons & Times):
+   - Advent, Christmas, Epiphany, Lent, Holy Week, Easter, Pentecost, Ordinary Time, canonical hours (Lauds, Vespers, Compline), liturgical calendars across Catholic, Orthodox, and Protestant traditions.
+4. HINDUISM, BUDDHISM, SIKHISM & WORLD TRADITIONS:
+   - Vedic Panchangam (Tithi, Nakshatra, Yoga, Karana, Rahu Kalam, Yamagandam, Muhurat), Puja times, Buddhist Uposatha, Sikh Gurpurabs, and global cultural calendars.
+5. SECULAR, CIVIL & ASTRONOMICAL SCIENCES:
+   - Solar noon, civil/nautical/astronomical twilight, equinoxes, solstices, worldwide timezones, and UTC offsets.
+
+COGNITIVE THINKING & SEARCH INSTRUCTIONS:
+- UNDERSTAND THE INTENT: Detect why the user is asking. (For example, if a user asks in Hebrew "זמני היום בחולון", understand they need the exact Halachic prayer schedule for Holon, Israel for today so they know when to pray Shacharit, recite Shema before the deadline, pray Mincha, and know when sunset and nightfall occur).
+- THINK & VERIFY: Ground your reasoning in the real-world findings below. Do not guess or hallucinate times or dates.
+- FLUENT NATIVE TONE: Answer in the EXACT SAME LANGUAGE as the user query (natural, dignified, fluent Hebrew for Hebrew queries; Arabic for Arabic; English for English). For Hebrew or Arabic, use natural right-to-left syntax.
+- COMPLETE & ACTIONABLE: Provide the exact times, dates, and names clearly. Explain briefly what each time or milestone signifies so the user does not have to do any further thinking or searching.
+- CLEAN STRUCTURE: Use clear bold headings, structured bullet points, and high readability.
+
+${groundingText}
+`;
+
+                const aiSummary = await executeAIRequest(userText, universalSystemPrompt, currentSettings);
+                hideGeneratingIndicator();
+
+                // Dynamic Schedule / Fact Badge Card (Renders if structured items exist)
+                let scheduleCardHtml = '';
+                if (discoveredSchedule && discoveredSchedule.items && discoveredSchedule.items.length > 0) {
+                    const isRtl = /[\u0590-\u05FF\u0600-\u06FF]/.test(discoveredSchedule.title);
+                    const dirAttr = isRtl ? 'dir="rtl"' : 'dir="ltr"';
+                    scheduleCardHtml = `
+                        <div class="bg-gradient-to-br from-blue-950/60 via-slate-900/60 to-black/80 border border-blue-500/40 rounded-xl p-4 shadow-xl space-y-3" ${dirAttr}>
+                            <div class="flex items-center justify-between flex-wrap gap-2 border-b border-blue-500/20 pb-2.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="p-1.5 bg-blue-600/30 text-blue-400 rounded-lg">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                    </span>
+                                    <div>
+                                        <div class="font-bold text-white text-sm">${escapeHtml(discoveredSchedule.title)}</div>
+                                        <div class="text-[11px] text-blue-300">${escapeHtml(discoveredSchedule.subtitle || '')}</div>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/30">Verified Live Data</span>
+                            </div>
+
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                                ${discoveredSchedule.items.map(item => `
+                                    <div class="bg-white/5 p-2 rounded-lg border border-white/5 hover:border-blue-500/30 transition-all">
+                                        <div class="text-gray-400 text-[10px] truncate">${escapeHtml(item.label)}</div>
+                                        <div class="font-bold text-white text-sm font-mono my-0.5">${escapeHtml(item.time)}</div>
+                                        ${item.desc ? `<div class="text-gray-400 text-[9px] truncate">${escapeHtml(item.desc)}</div>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Verified Sources shelf with 1-click links (ALWAYS opens in a new tab)
+                let sourcesHtml = '';
+                const displaySources = searchResults.length > 0 ? searchResults.slice(0, 4) : [];
+
+                sourcesHtml = `
+                    <div class="pt-2 border-t border-white/10 space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[11px] font-semibold text-gray-300 flex items-center gap-1">
+                                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                מקורות מאומתים &bull; Verified Sources (New Tab):
+                            </span>
+                            <span class="text-[10px] text-gray-400 font-mono">Silent Incognito Search</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${displaySources.map(s => `
+                                <a href="${escapeHtml(s.url)}" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-white/10 hover:bg-blue-600/50 hover:border-blue-400 text-gray-200 rounded-lg text-xs transition-all border border-white/10">
+                                    <svg class="w-3 h-3 text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                    <span class="font-medium truncate max-w-[170px]">${escapeHtml(s.title || s.source)}</span>
+                                </a>
+                            `).join('')}
+                            ${displaySources[0]?.url ? `
+                                <a href="https://web.archive.org/web/*/${encodeURIComponent(displaySources[0].url)}" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-950/40 hover:bg-amber-900/40 text-amber-300 rounded-lg text-xs transition-all border border-amber-500/30">
+                                    <span>Wayback Machine</span>
+                                </a>
+                            ` : ''}
+                            <a href="https://www.google.com/search?q=${encodeURIComponent(userText)}" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1 px-2 py-1 bg-white/5 hover:bg-white/15 text-gray-300 rounded-lg text-xs transition-all border border-white/5">
+                                <span>Google Search</span>
+                            </a>
+                        </div>
+                    </div>
+                `;
+
+                // Render main response in chat
+                chatBox.innerHTML += `
+                    <div class="bg-gradient-to-b from-slate-900/90 to-black/95 border border-purple-500/30 rounded-2xl p-4 space-y-3.5 shadow-2xl">
+                        <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                            <div class="flex items-center gap-2">
+                                <span class="p-1 bg-purple-600/30 text-purple-300 rounded-md">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                </span>
+                                <span class="font-bold text-white text-xs sm:text-sm">מחקר וסיכום אינטליגנטי &bull; ${escapeHtml(activeDisplayName)}</span>
+                            </div>
+                            <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">Autonomous Agent</span>
+                        </div>
+
+                        ${scheduleCardHtml}
+
+                        <!-- AI Synthesized Summary -->
+                        <div class="py-1">
+                            ${renderCleanMarkdown(aiSummary)}
+                        </div>
+
+                        ${sourcesHtml}
+                    </div>
+                `;
+
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+            } catch (researchErr) {
+                hideGeneratingIndicator();
+                console.error("Research loop error:", researchErr);
+
+                if (researchErr && researchErr.isConfigError) {
+                    chatBox.innerHTML += `
+                        <div class="text-amber-300 text-xs bg-amber-950/30 border border-amber-500/30 p-3.5 rounded-xl space-y-2.5">
+                            <div class="flex items-center justify-between font-bold">
+                                <span class="flex items-center gap-1.5">
+                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                    ${escapeHtml(researchErr.provider)} Key Required
+                                </span>
+                                <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Setup Needed</span>
+                            </div>
+                            <div class="text-gray-200 text-xs">${escapeHtml(researchErr.message)}</div>
+                            <div class="pt-1 flex items-center gap-2">
+                                <button onclick="togglePanel('settings-panel')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
+                                    <span>Configure in Settings</span>
+                                </button>
+                                <button onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold transition-all">
+                                    <span>Switch to Ollama</span>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    chatBox.innerHTML += `
+                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
+                            <div class="font-bold text-red-300">Research Error: ${escapeHtml(researchErr.message || 'Unknown issue')}</div>
+                            <div class="text-gray-300 text-xs">Could not complete live research. You can verify your connection in Settings or try again.</div>
+                            <button onclick="togglePanel('settings-panel')" class="text-purple-400 hover:underline text-xs">Open Settings</button>
+                        </div>
+                    `;
+                }
+                chatBox.scrollTop = chatBox.scrollHeight;
             }
         }
 
@@ -1446,7 +2208,7 @@
             chatBox.innerHTML += `<div class="bg-blue-600/20 p-3 rounded-lg text-sm"><b>You:</b> ${escapeHtml(userText)}</div>`;
             chatBox.scrollTop = chatBox.scrollHeight;
 
-            // Only direct explicit URLs or exact domains (e.g. https://... or google.com) bypass AI
+            // 1. Check if user typed a direct URL or domain (e.g. https://... or google.com)
             const directNav = resolveSmartNavigation(userText);
             if (directNav && directNav.type === 'direct') {
                 openInIncognitoTab(directNav.url);
@@ -1478,395 +2240,105 @@
                 return;
             }
 
-            // Show generating state
+            // 2. Check if user explicitly wants to open a YouTube stream or video filter
+            const isExplicitYouTubeNav = /\b(watch|stream|livestream|youtube|yt\s+|shorts|playlist)\b/i.test(userText) &&
+                                        /\b(on\s+yt|on\s+youtube|youtube\.com|channel|live|shorts?)\b/i.test(userText);
+
+            // 3. Check if user requested to read or summarize a specific URL
+            const urlMatch = userText.match(/https?:\/\/[^\s]+/i);
+            const isSummarizeUrlRequest = urlMatch && /\b(read|summarize|inspect|check|קרא|תסכם|סכם)\b/i.test(userText);
+
+            if (isSummarizeUrlRequest) {
+                // Execute research and summarize specifically for this URL
+                await performAIResearch(userText, currentSettings, urlMatch[0]);
+                return;
+            }
+
+            // 4. If this is a question, informational query, research, or schedule (like "זמני היום בחולון"):
+            // Run our autonomous research agent so the AI does the thinking, searches, verifies, and summarizes!
+            if (!isExplicitYouTubeNav) {
+                await performAIResearch(userText, currentSettings);
+                return;
+            }
+
+            // 5. Explicit YouTube smart filter routing
             showGeneratingIndicator();
 
             const systemPrompt = `
 You are the intelligent navigation assistant for ZenderByte.
-You have FULL web navigation capabilities through ZenderByte. The app executes your navigation decisions.
-CRITICAL: NEVER refuse user requests to find YouTube streams, videos, channels, news, articles, or websites. Do NOT say "I can't assist you in accessing YouTube content" or "I cannot browse live streams". ZenderByte opens the authentic live destination for the user based on your JSON decision.
+You have FULL web navigation capabilities through ZenderByte.
+The user wants to navigate to a YouTube stream, video, shorts, or channel.
 
-DECISION PROTOCOL:
-You decide what website to navigate to, what clean search terms to use, and what filter (if any) to apply.
-Always output a JSON block matching one of the following schemas:
-
-1. FOR YOUTUBE / VIDEO / STREAM / SHORTS SEARCHES:
-   You decide:
-   - "query": clean search terms stripped of conversational words or filler grammar (e.g., if user says "X's livestream on yt" or "X's latest stream youtube", you can choose whether to search for "X" with the filters on).
-   - "filter": (OPTIONAL) choose one of:
-       "live"     -> for currently live streams / broadcasts / X streams / on air
-       "shorts"   -> for YouTube shorts / short clips (<4 min)
-       "playlist" -> for playlists / collections
-       "channel"  -> for creator channels / user profiles
-       "4k"       -> for 4K / HDR quality videos
-       "movie"    -> for full movies
-   - "website": "youtube" (or direct url)
-   - "title": descriptive title indicating destination and intent
-   - note that "filter" is only a thing in youtube for the time being.
-
-   Format:
-   { "action": "open_url", "website": "youtube", "query": "<clean search terms>", "filter": "<live|shorts|playlist|channel|4k|movie|none>", "title": "<descriptive title>" }
-   Or if you specify full URL:
-   { "action": "open_url", "url": "https://www.youtube.com/results?search_query=...", "filter": "<filter_name>", "title": "..." }
-
-2. FOR GENERAL WEBSITES (e.g. Twitch, Reddit, Wikipedia, GitHub, specific sites):
-   You choose the appropriate target URL or website:
-   { "action": "open_url", "url": "<target_url>", "title": "<title>" }
-
-3. FOR ARTICLES, NEWS, OR INFORMATIONAL SEARCHES:
-   { "action": "article", "query": "<clean search terms>" }
-   or
-   { "action": "search", "query": "<clean search terms>" }
-
-4. FOR GENERAL CONVERSATION (no navigation needed):
-   Answer directly, concisely, and helpfully without JSON.
-
-Reminder: You do not remember past chats, do not claim that you can.
+Output a JSON block:
+{ "action": "open_url", "website": "youtube", "query": "<clean search terms>", "filter": "<live|shorts|playlist|channel|4k|movie|none>", "title": "<descriptive title>" }
 `;
 
             try {
                 const rawResponse = await executeAIRequest(userText, systemPrompt, currentSettings);
                 hideGeneratingIndicator();
 
-                // Check for JSON action response
                 let actionData = null;
                 const jsonMatch = rawResponse.match(/\{[\s\S]*"action"\s*:\s*"[^"]+"[\s\S]*\}/);
                 if (jsonMatch) {
                     try {
                         actionData = JSON.parse(jsonMatch[0]);
                     } catch (e) {
-                        console.warn("Could not parse JSON response from Ollama", e);
+                        console.warn("Could not parse JSON response", e);
                     }
                 }
-
-                // Check if user input itself was explicitly asking for an article or specific content
-                const isExplicitArticleRequest = /\b(article|news\s+story|editorial|report|backrooms\s+image|original\s+image|first\s+post)\b/i.test(userText);
 
                 if (actionData && actionData.action === 'open_url') {
-                    // Check if AI specified a filter key or YouTube action
                     const filterKey = (actionData.filter && actionData.filter !== 'none') ? actionData.filter.toLowerCase().trim() : null;
-                    const isYouTubeAction = actionData.website === 'youtube' ||
-                                           (actionData.url && /youtube\.com/i.test(actionData.url)) ||
-                                           filterKey in YOUTUBE_FILTER_CODES;
+                    const searchTerms = actionData.query || userText;
+                    const ytBuilt = buildYouTubeSearch(searchTerms, filterKey);
+                    const finalTargetUrl = ytBuilt.url;
+                    const filterBadge = ytBuilt.filterLabel;
 
-                    let finalTargetUrl = '';
-                    let displayTitle = actionData.title || '';
-                    let filterBadge = null;
-                    let altLinks = [];
-                    let platformName = 'Website';
-
-                    if (isYouTubeAction) {
-                        platformName = 'YouTube';
-                        // Let the AI-decided query or user query take priority
-                        const searchTerms = actionData.query || (actionData.url ? null : userText);
-                        
-                        if (searchTerms) {
-                            const ytBuilt = buildYouTubeSearch(searchTerms, filterKey);
-                            finalTargetUrl = ytBuilt.url;
-                            filterBadge = ytBuilt.filterLabel;
-                            altLinks = ytBuilt.altLinks;
-                            if (!displayTitle) {
-                                displayTitle = filterBadge ? `YouTube (${filterBadge}): ${ytBuilt.cleanSearch}` : `YouTube: ${ytBuilt.cleanSearch}`;
-                            }
-                        } else if (actionData.url) {
-                            let ytUrl = actionData.url;
-                            // If AI provided a filter key and URL doesn't have &sp= yet, attach the exact filter param
-                            if (filterKey && YOUTUBE_FILTER_CODES[filterKey] && !ytUrl.includes('&sp=')) {
-                                const sep = ytUrl.includes('?') ? '&' : '?';
-                                ytUrl += `${sep}sp=${YOUTUBE_FILTER_CODES[filterKey]}`;
-                            }
-                            finalTargetUrl = ytUrl;
-                            filterBadge = filterKey && YOUTUBE_FILTER_LABELS[filterKey] ? YOUTUBE_FILTER_LABELS[filterKey] : null;
-                            if (!displayTitle) displayTitle = filterBadge ? `YouTube (${filterBadge})` : 'YouTube Results';
-                        }
-                    } else {
-                        finalTargetUrl = resolveDirectWebsite(actionData.url || actionData.query || userText) || actionData.url;
-                    }
-
-                    if (!finalTargetUrl) {
-                        finalTargetUrl = `https://www.google.com/search?q=${encodeURIComponent(actionData.query || userText)}`;
-                    }
-
-                    // Open in incognito/private tab
                     openInIncognitoTab(finalTargetUrl);
 
-                    if (isYouTubeAction) {
-                        const iconColor = filterKey === 'shorts' ? 'text-pink-400' : 'text-red-400';
-                        const badgeColor = filterKey === 'shorts' ? 'bg-pink-500/20 text-pink-300' : 'bg-red-500/20 text-red-300';
-                        const btnBg = filterKey === 'shorts' ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500' : 'bg-red-600 hover:bg-red-500';
-                        const filterTag = filterBadge ? `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 font-mono">${escapeHtml(filterBadge)}</span>` : '';
-
-                        chatBox.innerHTML += `
-                            <div class="bg-gradient-to-r from-red-950/40 via-blue-950/40 to-black/50 border border-red-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
-                                <div class="flex items-center justify-between">
-                                    <span class="flex items-center gap-1.5 ${iconColor} font-bold text-xs uppercase tracking-wider">
-                                        <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                        YouTube &bull; Filter Activated
-                                    </span>
-                                    <div class="flex items-center gap-1.5">
-                                        ${filterTag}
-                                        <span class="text-[10px] px-2 py-0.5 rounded ${badgeColor} font-mono">AI Routed</span>
-                                    </div>
-                                </div>
-                                <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(displayTitle)}</div>
-                                <div class="text-gray-300 text-xs">AI selected destination: <b>YouTube</b>${filterBadge ? ` with <b>${escapeHtml(filterBadge)}</b> filter` : ''}. Opened in private tab.</div>
-                                <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                    <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-semibold transition-all shadow-md">
-                                        <span>Open on YouTube</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                    </a>
-                                    ${altLinks.map(link => `
-                                        <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
-                                            <span>${escapeHtml(link.label)}</span>
-                                        </a>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        const cleanDomain = finalTargetUrl.replace(/^https?:\/\//, '').split('/')[0];
-                        const cardId = 'url-card-' + Date.now();
-                        const archiveFallback = `https://web.archive.org/web/*/${encodeURIComponent(cleanDomain)}`;
-
-                        chatBox.innerHTML += `
-                                <div id="${cardId}" class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
-                                    <div class="flex items-center justify-between">
-                                        <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
-                                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            AI Navigation &bull; Opened in Tab
-                                        </span>
-                                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">${escapeHtml(cleanDomain)}</span>
-                                    </div>
-                                    <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(displayTitle || finalTargetUrl)}</div>
-                                    <div class="text-gray-400 text-[11px]">Opened in private incognito tab. Directed by AI assistant.</div>
-                                    <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                        <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
-                                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
-                                            <span>Open Page</span>
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                        </a>
-                                        <a id="${cardId}-archive-btn" href="${escapeHtml(archiveFallback)}" target="_blank" rel="noopener noreferrer"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
-                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                            <span id="${cardId}-archive-label">Internet Archive</span>
-                                        </a>
-                                        <a href="https://www.google.com/search?q=${encodeURIComponent(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
-                                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
-                                            <span>Verify on Google</span>
-                                        </a>
-                                    </div>
-                                </div>
-                            `;
-
-                        // Async check Wayback Machine in background
-                        checkWaybackAvailability(finalTargetUrl).then(wb => {
-                            if (wb.available && wb.snapshotUrl) {
-                                const btn = document.getElementById(`${cardId}-archive-btn`);
-                                const lbl = document.getElementById(`${cardId}-archive-label`);
-                                if (btn && lbl) {
-                                    btn.href = wb.snapshotUrl;
-                                    lbl.textContent = 'Wayback Snapshot Available';
-                                    btn.classList.add('border-emerald-500/50', 'text-emerald-300');
-                                }
-                            }
-                        });
-                    }
-
-                } else if ((actionData && (actionData.action === 'article' || (actionData.action === 'search' && (actionData.url === true || isExplicitArticleRequest)))) || isExplicitArticleRequest) {
-                    // ARTICLE SEARCH: Open Google Lucky Article or Search directly without hallucinated URLs
-                    let cleanQuery = actionData?.query || userText;
-                    cleanQuery = cleanQuery.replace(/^(search\s+(for\s+)?an?\s+article\s+(for|about|on)?|find\s+an?\s+article\s+(for|about|on)?|go\s+to\s+(the\s+)?)\s*/i, '').trim();
-
-                    const luckyArticleUrl = `https://www.google.com/search?q=${encodeURIComponent(cleanQuery + ' article')}&btnI=1`;
-                    const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(cleanQuery)}`;
-                    const archiveSearchUrl = `https://web.archive.org/web/*/${encodeURIComponent(cleanQuery)}`;
-
-                    // Open direct lucky article in private tab
-                    openInIncognitoTab(luckyArticleUrl);
+                    const iconColor = filterKey === 'shorts' ? 'text-pink-400' : 'text-red-400';
+                    const badgeColor = filterKey === 'shorts' ? 'bg-pink-500/20 text-pink-300' : 'bg-red-500/20 text-red-300';
+                    const btnBg = filterKey === 'shorts' ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500' : 'bg-red-600 hover:bg-red-500';
+                    const filterTag = filterBadge ? `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 font-mono">${escapeHtml(filterBadge)}</span>` : '';
 
                     chatBox.innerHTML += `
-                            <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
-                                <div class="flex items-center justify-between">
-                                    <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"/></svg>
-                                        Article & Source Search &bull; Opened in Tab
-                                    </span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">Top Article Direct</span>
+                        <div class="bg-gradient-to-r from-red-950/40 via-blue-950/40 to-black/50 border border-red-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                            <div class="flex items-center justify-between">
+                                <span class="flex items-center gap-1.5 ${iconColor} font-bold text-xs uppercase tracking-wider">
+                                    <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                                    YouTube &bull; Filter Activated
+                                </span>
+                                <div class="flex items-center gap-1.5">
+                                    ${filterTag}
+                                    <span class="text-[10px] px-2 py-0.5 rounded ${badgeColor} font-mono">AI Routed</span>
                                 </div>
-                                <div class="text-gray-100 font-semibold text-xs leading-snug">Top verified article for "${escapeHtml(cleanQuery)}"</div>
-                                <div class="text-gray-400 text-[11px]">Directly landed on the top authoritative article via Google I'm Feeling Lucky redirect.</div>
-                                <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                    <a href="${escapeHtml(luckyArticleUrl)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
-                                        <span>Open Top Article</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                    </a>
-                                    <a href="${escapeHtml(googleSearchUrl)}" target="_blank" rel="noopener noreferrer"
+                            </div>
+                            <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(actionData.title || ytBuilt.cleanSearch)}</div>
+                            <div class="text-gray-300 text-xs">AI selected destination: <b>YouTube</b>${filterBadge ? ` with <b>${escapeHtml(filterBadge)}</b> filter` : ''}. Opened in private tab.</div>
+                            <div class="pt-1 flex items-center gap-2 flex-wrap">
+                                <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
+                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-semibold transition-all shadow-md">
+                                    <span>Open on YouTube</span>
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                                </a>
+                                ${ytBuilt.altLinks.map(link => `
+                                    <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer"
                                        class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
-                                        <span>All Google Results</span>
+                                        <span>${escapeHtml(link.label)}</span>
                                     </a>
-                                    <a href="${escapeHtml(archiveSearchUrl)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
-                                        <span>Search Archive</span>
-                                    </a>
-                                </div>
+                                `).join('')}
                             </div>
-                        `;
-                } else if (actionData && actionData.action === 'search') {
-                    // GENERAL SEARCH
-                    const rawQuery = actionData.query || userText;
-                    const siteUrl = resolveDirectWebsite(rawQuery);
-                    let targetUrl = '';
-                    let label = '';
-
-                    if (siteUrl) {
-                        targetUrl = siteUrl;
-                        label = 'Website';
-                    } else {
-                        targetUrl = `https://www.google.com/search?q=${encodeURIComponent(rawQuery)}`;
-                        label = 'Google Search';
-                    }
-
-                    openInIncognitoTab(targetUrl);
-
-                    chatBox.innerHTML += `
-                            <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <span class="text-blue-400 font-bold text-xs uppercase tracking-wider">${escapeHtml(label)} Opened</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">noopener, noreferrer</span>
-                                </div>
-                                <div class="text-gray-200 text-xs">Opened in a new private tab without referrer leakage.</div>
-                                <div class="pt-1 flex items-center gap-2">
-                                    <a href="${escapeHtml(targetUrl)}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold">Open ${label}</a>
-                                    <span class="text-gray-400 text-[11px] font-mono truncate max-w-[220px]">${escapeHtml(targetUrl)}</span>
-                                </div>
-                            </div>
-                        `;
+                        </div>
+                    `;
                 } else {
-                    // Check if the AI outputted a generic refusal (e.g., "I can't assist you in accessing YouTube content", "I can't help you with that")
-                    const isRefusal = /(can't|cannot|unable to|can not|not able to).*(help|assist|access|provide|open|browse|search|view|youtube)/i.test(rawResponse) ||
-                                      /(as an ai|language model|i do not have access|i don't have access)/i.test(rawResponse);
-
-                    if (isRefusal) {
-                        // Fallback only if the model explicitly refused
-                        let fallbackFilter = null;
-                        if (/\b(currently\s+live|live\s+stream|livestream|stream|on\s+air)\b/i.test(userText)) fallbackFilter = 'live';
-                        else if (/\b(shorts?)\b/i.test(userText)) fallbackFilter = 'shorts';
-
-                        const ytData = buildYouTubeSearch(userText, fallbackFilter);
-                        const ytSearchUrl = ytData.url;
-                        const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(ytData.cleanSearch + ' live')}`;
-                        const twitchSearchUrl = `https://www.twitch.tv/search?term=${encodeURIComponent(ytData.cleanSearch)}`;
-
-                        // Auto-open YouTube if user specifically asked for stream or YouTube
-                        if (/\b(stream|youtube|video|watch|live|shorts?)\b/i.test(userText)) {
-                            openInIncognitoTab(ytSearchUrl);
-                        }
-
-                        chatBox.innerHTML += `
-                            <div class="bg-gradient-to-r from-amber-950/40 via-red-950/30 to-black/50 border border-amber-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
-                                <div class="flex items-center justify-between">
-                                    <span class="flex items-center gap-1.5 text-amber-400 font-bold text-xs uppercase tracking-wider">
-                                        <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                        Model Filter Intercepted &bull; Live Filter Activated
-                                    </span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">${escapeHtml(ytData.filterLabel || 'Auto-Bypassed')}</span>
-                                </div>
-                                <div class="text-gray-300 text-xs leading-relaxed">
-                                    Local model gave a default disclaimer (<i>"${escapeHtml(rawResponse.trim())}"</i>), but ZenderByte has routed your query directly to live search:
-                                </div>
-                                <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                    <a href="${escapeHtml(ytSearchUrl)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-600 hover:bg-red-500 text-white rounded-lg text-xs font-semibold transition-all shadow-md">
-                                        <span>Search on YouTube (${escapeHtml(ytData.filterLabel || 'Direct')})</span>
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                    </a>
-                                    <a href="${escapeHtml(googleSearchUrl)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
-                                        <span>Search on Google</span>
-                                    </a>
-                                    <a href="${escapeHtml(twitchSearchUrl)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-purple-600/80 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold transition-all">
-                                        <span>Search on Twitch</span>
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    } else {
-                        // Standard conversational response with active engine label
-                        const pDisplayNames = {
-                            'ollama': 'Ollama',
-                            'gemini': 'Google Gemini',
-                            'claude': 'Claude',
-                            'openai': 'ChatGPT'
-                        };
-                        const activeDisplayName = pDisplayNames[currentProvider] || 'AI';
-                        chatBox.innerHTML += `<div class="bg-white/10 p-3 rounded-lg text-sm"><b>${escapeHtml(activeDisplayName)}:</b> ${escapeHtml(rawResponse)}</div>`;
-                    }
+                    // Fallback to research
+                    await performAIResearch(userText, currentSettings);
                 }
-
                 chatBox.scrollTop = chatBox.scrollHeight;
             } catch (err) {
                 hideGeneratingIndicator();
-                const host = (currentSettings.ollamaHost || 'http://localhost:11434').replace(/\/+$/, '');
-                const endpoint = (document.getElementById('ollamaUrl')?.value || `${host}/api/generate`).trim();
-
-                if (err && err.isConfigError) {
-                    chatBox.innerHTML += `
-                        <div class="text-amber-300 text-xs bg-amber-950/30 border border-amber-500/30 p-3.5 rounded-xl space-y-2.5">
-                            <div class="flex items-center justify-between font-bold">
-                                <span class="flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                    ${escapeHtml(err.provider)} Key Required
-                                </span>
-                                <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Setup Needed</span>
-                            </div>
-                            <div class="text-gray-200 text-xs">${escapeHtml(err.message)}</div>
-                            <div class="pt-1 flex items-center gap-2">
-                                <button onclick="togglePanel('settings-panel')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                    <span>Configure in Settings</span>
-                                </button>
-                                <button onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold transition-all">
-                                    <span>Switch to Ollama</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else if (currentProvider === 'ollama') {
-                    chatBox.innerHTML += `
-                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
-                            <div class="flex items-center justify-between font-bold">
-                                <span class="flex items-center gap-1.5 text-red-300">
-                                    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    Could not reach Ollama
-                                </span>
-                                <button onclick="togglePanel('settings-panel')" class="text-purple-300 hover:text-purple-200 text-xs underline">Settings</button>
-                            </div>
-                            <div class="text-gray-300 text-[11px]">Failed connecting to <code class="bg-black/50 px-1 py-0.5 rounded text-gray-200 font-mono">${escapeHtml(endpoint)}</code></div>
-                            <div class="text-gray-400 text-[11px]">To connect local Ollama, run this in your terminal:</div>
-                            <input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono text-gray-200" readonly>
-                            <div class="text-gray-400 text-[11px] pt-1">Using a phone or tablet? Set Ollama port &amp; your LAN IP in <button onclick="togglePanel('settings-panel')" class="text-purple-400 hover:underline">Settings</button>, or switch to Gemini/Claude/OpenAI cloud models.</div>
-                        </div>
-                    `;
-                } else {
-                    chatBox.innerHTML += `
-                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
-                            <div class="flex items-center justify-between font-bold">
-                                <span class="text-red-300">❌ Error from ${escapeHtml(currentProvider.toUpperCase())}</span>
-                                <button onclick="togglePanel('settings-panel')" class="text-purple-300 hover:text-purple-200 text-xs underline">Settings</button>
-                            </div>
-                            <div class="text-gray-300 text-xs">${escapeHtml(err.message || 'Request failed')}</div>
-                            <div class="pt-1 flex items-center gap-2">
-                                <button onclick="togglePanel('settings-panel')" class="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold">Verify Key &amp; Model</button>
-                                <button onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold">Switch to Ollama</button>
-                            </div>
-                        </div>
-                    `;
-                }
-                chatBox.scrollTop = chatBox.scrollHeight;
+                console.error("YouTube routing fallback to research:", err);
+                await performAIResearch(userText, currentSettings);
             }
         }
 
@@ -1883,6 +2355,554 @@ Reminder: You do not remember past chats, do not claim that you can.
         // Enter key to send in AI input
         document.getElementById('aiMsg').addEventListener('keypress', (e) => {
             if (e.key === 'Enter') sendToOllama();
+        });
+
+        // ==========================================
+        // APP TOAST NOTIFICATIONS
+        // ==========================================
+        function showAppToast(message, type = 'info') {
+            let toast = document.getElementById('appToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'appToast';
+                toast.className = 'fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-full text-xs font-semibold shadow-2xl transition-all duration-300 pointer-events-none opacity-0 translate-y-[-10px] glass';
+                document.body.appendChild(toast);
+            }
+
+            let bgBorder = 'border-blue-500/50 text-blue-200 bg-blue-950/90';
+            if (type === 'error') bgBorder = 'border-red-500/50 text-red-200 bg-red-950/90';
+            else if (type === 'warning') bgBorder = 'border-amber-500/50 text-amber-200 bg-amber-950/90';
+            else if (type === 'success') bgBorder = 'border-emerald-500/50 text-emerald-200 bg-emerald-950/90';
+
+            toast.className = `fixed top-5 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-full text-xs font-semibold shadow-2xl transition-all duration-300 pointer-events-none opacity-100 translate-y-0 border ${bgBorder}`;
+            toast.textContent = message;
+
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3200);
+        }
+
+        // ==========================================
+        // SPEECH TO TEXT: WEB SEARCH & AI CHAT
+        // ==========================================
+        const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        // 1. Search the Web Voice Assistant
+        let searchRecognition = null;
+        let isSearchVoiceActive = false;
+        let searchVoiceAutoTimeout = null;
+
+        function toggleSearchVoice() {
+            if (isSearchVoiceActive) {
+                stopSearchVoice(false);
+            } else {
+                startSearchVoice();
+            }
+        }
+
+        function startSearchVoice() {
+            if (!SpeechRec) {
+                showAppToast("Speech recognition is not supported in this browser engine. Please try Chrome, Edge, or Safari.", "warning");
+                return;
+            }
+
+            // If AI voice is active, stop it
+            if (isAiVoiceActive) stopAiVoice(true);
+
+            try {
+                if (searchRecognition) {
+                    try { searchRecognition.abort(); } catch (e) {}
+                }
+                searchRecognition = new SpeechRec();
+                searchRecognition.lang = navigator.language || 'en-US';
+                searchRecognition.continuous = false;
+                searchRecognition.interimResults = true;
+
+                const mainInput = document.getElementById('mainSearch');
+                const voiceStatus = document.getElementById('searchVoiceStatus');
+                const statusText = document.getElementById('searchVoiceStatusText');
+                const voicePulse = document.getElementById('searchVoicePulse');
+                const voiceIcon = document.getElementById('searchVoiceIcon');
+                const voiceBtn = document.getElementById('searchVoiceBtn');
+                const submitNowBtn = document.getElementById('searchVoiceSubmitNowBtn');
+
+                searchRecognition.onstart = () => {
+                    isSearchVoiceActive = true;
+                    if (voiceStatus) voiceStatus.classList.remove('hidden');
+                    if (voicePulse) voicePulse.classList.remove('hidden');
+                    if (voiceIcon) voiceIcon.classList.add('text-red-500', 'scale-110');
+                    if (voiceBtn) voiceBtn.classList.add('mic-recording');
+                    if (statusText) statusText.textContent = "Listening... speak now";
+                    if (submitNowBtn) submitNowBtn.classList.add('hidden');
+                };
+
+                searchRecognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    const currentText = (finalTranscript || interimTranscript).trim();
+                    if (currentText) {
+                        mainInput.value = currentText;
+                        if (statusText) statusText.textContent = `Heard: "${currentText}"`;
+                    }
+                };
+
+                searchRecognition.onerror = (event) => {
+                    console.warn("Search speech error:", event.error);
+                    if (event.error === 'not-allowed') {
+                        showAppToast("Microphone access was denied. Please allow microphone permissions in your browser.", "error");
+                    } else if (event.error === 'network') {
+                        showAppToast("Network error occurred during speech recognition.", "error");
+                    }
+                    stopSearchVoice(true);
+                };
+
+                searchRecognition.onend = () => {
+                    isSearchVoiceActive = false;
+                    if (voicePulse) voicePulse.classList.add('hidden');
+                    if (voiceIcon) voiceIcon.classList.remove('text-red-500', 'scale-110');
+                    if (voiceBtn) voiceBtn.classList.remove('mic-recording');
+
+                    const text = mainInput.value.trim();
+                    if (text) {
+                        if (statusText) statusText.textContent = `Ready! Searching for "${text}"...`;
+                        if (submitNowBtn) submitNowBtn.classList.remove('hidden');
+
+                        clearTimeout(searchVoiceAutoTimeout);
+                        searchVoiceAutoTimeout = setTimeout(() => {
+                            if (voiceStatus) voiceStatus.classList.add('hidden');
+                            doGoogleSearch();
+                        }, 1200);
+                    } else {
+                        setTimeout(() => {
+                            if (voiceStatus) voiceStatus.classList.add('hidden');
+                        }, 1500);
+                    }
+                };
+
+                searchRecognition.start();
+            } catch (err) {
+                console.error("Speech recognition start failed:", err);
+                showAppToast("Could not start speech recognition.", "error");
+                stopSearchVoice(true);
+            }
+        }
+
+        function stopSearchVoice(cancelSearch = false) {
+            if (searchVoiceAutoTimeout && cancelSearch) {
+                clearTimeout(searchVoiceAutoTimeout);
+                searchVoiceAutoTimeout = null;
+            }
+            if (searchRecognition) {
+                try {
+                    if (cancelSearch) searchRecognition.abort();
+                    else searchRecognition.stop();
+                } catch (e) {}
+            }
+            isSearchVoiceActive = false;
+            const voiceStatus = document.getElementById('searchVoiceStatus');
+            const voicePulse = document.getElementById('searchVoicePulse');
+            const voiceIcon = document.getElementById('searchVoiceIcon');
+            const voiceBtn = document.getElementById('searchVoiceBtn');
+            if (voicePulse) voicePulse.classList.add('hidden');
+            if (voiceIcon) voiceIcon.classList.remove('text-red-500', 'scale-110');
+            if (voiceBtn) voiceBtn.classList.remove('mic-recording');
+            if (voiceStatus && cancelSearch) voiceStatus.classList.add('hidden');
+        }
+
+        function finishVoiceSearchNow() {
+            if (searchVoiceAutoTimeout) {
+                clearTimeout(searchVoiceAutoTimeout);
+                searchVoiceAutoTimeout = null;
+            }
+            const voiceStatus = document.getElementById('searchVoiceStatus');
+            if (voiceStatus) voiceStatus.classList.add('hidden');
+            doGoogleSearch();
+        }
+
+        // 2. AI Chat Voice Assistant
+        let aiRecognition = null;
+        let isAiVoiceActive = false;
+
+        function toggleAiVoice() {
+            if (isAiVoiceActive) {
+                stopAiVoice(false);
+            } else {
+                startAiVoice();
+            }
+        }
+
+        function startAiVoice() {
+            if (!SpeechRec) {
+                showAppToast("Speech recognition is not supported in this browser engine. Please try Chrome, Edge, or Safari.", "warning");
+                return;
+            }
+
+            // Stop search voice if active
+            if (isSearchVoiceActive) stopSearchVoice(true);
+
+            try {
+                if (aiRecognition) {
+                    try { aiRecognition.abort(); } catch (e) {}
+                }
+                aiRecognition = new SpeechRec();
+                aiRecognition.lang = navigator.language || 'en-US';
+                aiRecognition.continuous = false;
+                aiRecognition.interimResults = true;
+
+                const aiInput = document.getElementById('aiMsg');
+                const voiceStatus = document.getElementById('aiVoiceStatus');
+                const statusText = document.getElementById('aiVoiceStatusText');
+                const voicePulse = document.getElementById('aiVoicePulse');
+                const voiceIcon = document.getElementById('aiVoiceIcon');
+                const voiceBtn = document.getElementById('aiVoiceBtn');
+                const autoSendCheckbox = document.getElementById('aiVoiceAutoSend');
+
+                aiRecognition.onstart = () => {
+                    isAiVoiceActive = true;
+                    if (voiceStatus) voiceStatus.classList.remove('hidden');
+                    if (voicePulse) voicePulse.classList.remove('hidden');
+                    if (voiceIcon) voiceIcon.classList.add('text-red-500', 'scale-110');
+                    if (voiceBtn) voiceBtn.classList.add('mic-recording');
+                    if (statusText) statusText.textContent = "Listening... speak to the AI";
+                };
+
+                aiRecognition.onresult = (event) => {
+                    let interimTranscript = '';
+                    let finalTranscript = '';
+
+                    for (let i = event.resultIndex; i < event.results.length; ++i) {
+                        if (event.results[i].isFinal) {
+                            finalTranscript += event.results[i][0].transcript;
+                        } else {
+                            interimTranscript += event.results[i][0].transcript;
+                        }
+                    }
+
+                    const currentText = (finalTranscript || interimTranscript).trim();
+                    if (currentText) {
+                        aiInput.value = currentText;
+                        if (statusText) statusText.textContent = `Heard: "${currentText}"`;
+                    }
+                };
+
+                aiRecognition.onerror = (event) => {
+                    console.warn("AI voice speech error:", event.error);
+                    if (event.error === 'not-allowed') {
+                        showAppToast("Microphone access was denied. Please allow microphone permissions in your browser.", "error");
+                    }
+                    stopAiVoice(true);
+                };
+
+                aiRecognition.onend = () => {
+                    isAiVoiceActive = false;
+                    if (voicePulse) voicePulse.classList.add('hidden');
+                    if (voiceIcon) voiceIcon.classList.remove('text-red-500', 'scale-110');
+                    if (voiceBtn) voiceBtn.classList.remove('mic-recording');
+                    if (voiceStatus) voiceStatus.classList.add('hidden');
+
+                    const text = aiInput.value.trim();
+                    const autoSend = autoSendCheckbox ? autoSendCheckbox.checked : true;
+
+                    if (text && autoSend) {
+                        showAppToast("Voice received! Sending to AI...", "info");
+                        sendToOllama();
+                    } else if (text) {
+                        aiInput.focus();
+                    }
+                };
+
+                aiRecognition.start();
+            } catch (err) {
+                console.error("AI speech recognition start failed:", err);
+                showAppToast("Could not start speech recognition.", "error");
+                stopAiVoice(true);
+            }
+        }
+
+        function stopAiVoice(abort = false) {
+            if (aiRecognition) {
+                try {
+                    if (abort) aiRecognition.abort();
+                    else aiRecognition.stop();
+                } catch (e) {}
+            }
+            isAiVoiceActive = false;
+            const voiceStatus = document.getElementById('aiVoiceStatus');
+            const voicePulse = document.getElementById('aiVoicePulse');
+            const voiceIcon = document.getElementById('aiVoiceIcon');
+            const voiceBtn = document.getElementById('aiVoiceBtn');
+            if (voicePulse) voicePulse.classList.add('hidden');
+            if (voiceIcon) voiceIcon.classList.remove('text-red-500', 'scale-110');
+            if (voiceBtn) voiceBtn.classList.remove('mic-recording');
+            if (voiceStatus) voiceStatus.classList.add('hidden');
+        }
+
+        // ==========================================
+        // REVERSE IMAGE SEARCH (100% LOCAL & PRIVATE)
+        // ==========================================
+        let currentImageFile = null;
+        let currentImagePreviewUrl = null;
+
+        function onReverseImageFileSelected(files) {
+            if (!files || !files.length) return;
+            setReverseImage(files[0]);
+        }
+
+        function onImageDragOver(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropZone = document.getElementById('imageDropZone');
+            if (dropZone) dropZone.classList.add('border-pink-500', 'bg-pink-500/10');
+        }
+
+        function onImageDragLeave(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropZone = document.getElementById('imageDropZone');
+            if (dropZone) dropZone.classList.remove('border-pink-500', 'bg-pink-500/10');
+        }
+
+        function onImageDrop(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dropZone = document.getElementById('imageDropZone');
+            if (dropZone) dropZone.classList.remove('border-pink-500', 'bg-pink-500/10');
+
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.type && file.type.startsWith('image/')) {
+                    setReverseImage(file);
+                } else {
+                    showAppToast("Please drop an image file (PNG, JPG, WEBP, GIF).", "warning");
+                }
+            }
+        }
+
+        function setReverseImage(file) {
+            if (!file) return;
+            currentImageFile = file;
+
+            // Release any existing local object URL to prevent memory leaks
+            if (currentImagePreviewUrl) {
+                try { URL.revokeObjectURL(currentImagePreviewUrl); } catch (e) {}
+            }
+            currentImagePreviewUrl = URL.createObjectURL(file);
+
+            const dropZone = document.getElementById('imageDropZone');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            const previewImg = document.getElementById('imagePreviewImg');
+            const metaDimensions = document.getElementById('imageMetaDimensions');
+            const metaSize = document.getElementById('imageMetaSize');
+            const metaName = document.getElementById('imageMetaName');
+
+            if (previewImg) previewImg.src = currentImagePreviewUrl;
+            if (dropZone) dropZone.classList.add('hidden');
+            if (previewContainer) {
+                previewContainer.classList.remove('hidden');
+                previewContainer.classList.add('flex');
+            }
+
+            if (metaName) metaName.textContent = file.name || 'Pasted Image';
+            if (metaSize) {
+                const kb = file.size / 1024;
+                metaSize.textContent = kb > 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.round(kb)} KB`;
+            }
+
+            // Read natural dimensions
+            const imgObj = new Image();
+            imgObj.onload = () => {
+                if (metaDimensions) metaDimensions.textContent = `${imgObj.naturalWidth} × ${imgObj.naturalHeight}px`;
+            };
+            imgObj.src = currentImagePreviewUrl;
+
+            // Configure draggable preview for dragging directly into Google Lens
+            if (previewImg) {
+                previewImg.ondragstart = (e) => {
+                    if (currentImageFile && e.dataTransfer) {
+                        try {
+                            e.dataTransfer.setData('text/plain', currentImageFile.name || 'image.png');
+                            e.dataTransfer.items.add(currentImageFile);
+                        } catch (err) {}
+                    }
+                };
+            }
+        }
+
+        function clearSelectedImage() {
+            if (currentImagePreviewUrl) {
+                try { URL.revokeObjectURL(currentImagePreviewUrl); } catch (e) {}
+                currentImagePreviewUrl = null;
+            }
+            currentImageFile = null;
+
+            const fileInput = document.getElementById('reverseImageFileInput');
+            if (fileInput) fileInput.value = '';
+
+            const dropZone = document.getElementById('imageDropZone');
+            const previewContainer = document.getElementById('imagePreviewContainer');
+            if (dropZone) dropZone.classList.remove('hidden');
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+                previewContainer.classList.remove('flex');
+            }
+        }
+
+        // Convert any image file (PNG, JPEG, WebP, GIF) to a PNG blob and copy to system clipboard
+        async function copyCurrentImageToClipboard(showNotification = true) {
+            if (!currentImageFile) {
+                showAppToast("Please upload or paste an image first.", "warning");
+                return false;
+            }
+
+            try {
+                let pngBlob = currentImageFile;
+                // Browsers standardly require image/png for ClipboardItem
+                if (currentImageFile.type !== 'image/png') {
+                    pngBlob = await new Promise((resolve, reject) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.naturalWidth || img.width;
+                            canvas.height = img.naturalHeight || img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+                            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas conversion failed')), 'image/png');
+                        };
+                        img.onerror = () => reject(new Error('Image failed to load on canvas'));
+                        img.src = currentImagePreviewUrl || URL.createObjectURL(currentImageFile);
+                    });
+                }
+
+                if (navigator.clipboard && navigator.clipboard.write) {
+                    await navigator.clipboard.write([
+                        new ClipboardItem({ 'image/png': pngBlob })
+                    ]);
+                    if (showNotification) {
+                        showAppToast("Image copied to clipboard! (Ready to paste)", "success");
+                    }
+                    return true;
+                } else {
+                    if (showNotification) {
+                        showAppToast("Clipboard access unavailable. You can drag or download the image.", "warning");
+                    }
+                    return false;
+                }
+            } catch (err) {
+                console.warn("Clipboard copy warning:", err);
+                if (showNotification) {
+                    showAppToast("Could not copy automatically. You can drag or download the image.", "warning");
+                }
+                return false;
+            }
+        }
+
+        // Direct client-side Google Lens Reverse Search (Zero Remote Uploads)
+        async function executeGoogleReverseSearch() {
+            if (!currentImageFile) {
+                showAppToast("Please upload or paste an image first.", "warning");
+                return;
+            }
+
+            // Copy to clipboard first so the user can immediately paste it into Google Lens
+            const copied = await copyCurrentImageToClipboard(false);
+
+            // Open official Google Lens in a new tab
+            window.open('https://lens.google.com/', '_blank', 'noopener,noreferrer');
+
+            if (copied) {
+                showAppToast("Copied! Press Ctrl+V (or tap paste) on Google Lens", "success");
+            } else {
+                showAppToast("Google Lens opened! Drag your image or paste it to search", "info");
+            }
+        }
+
+        function openGoogleLensDirect() {
+            executeGoogleReverseSearch();
+        }
+
+        async function openBingVisualSearch() {
+            if (currentImageFile) {
+                await copyCurrentImageToClipboard(false);
+            }
+            window.open('https://www.bing.com/visualsearch', '_blank', 'noopener,noreferrer');
+            if (currentImageFile) {
+                showAppToast("Bing Visual opened! Press Ctrl+V to paste your image", "success");
+            }
+        }
+
+        async function openYandexVisualSearch() {
+            if (currentImageFile) {
+                await copyCurrentImageToClipboard(false);
+            }
+            window.open('https://yandex.com/images/search', '_blank', 'noopener,noreferrer');
+            if (currentImageFile) {
+                showAppToast("Yandex Images opened! Press Ctrl+V to paste your image", "success");
+            }
+        }
+
+        function downloadSelectedImage() {
+            if (!currentImageFile || !currentImagePreviewUrl) {
+                showAppToast("No image to download.", "warning");
+                return;
+            }
+            const a = document.createElement('a');
+            a.href = currentImagePreviewUrl;
+            a.download = currentImageFile.name || 'zenderbyte-image.png';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            showAppToast("Image downloaded to your device.", "success");
+        }
+
+        // ==========================================
+        // GLOBAL CLIPBOARD PASTE & DRAG-AND-DROP
+        // ==========================================
+        window.addEventListener('paste', (e) => {
+            const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
+            if (!items) return;
+
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type && items[i].type.indexOf('image') !== -1) {
+                    const blob = items[i].getAsFile();
+                    if (blob) {
+                        e.preventDefault();
+                        togglePanel('image-panel');
+                        setReverseImage(blob);
+                        showAppToast("Image pasted! Ready for Reverse Search.", "info");
+                        return;
+                    }
+                }
+            }
+        });
+
+        // Allow dropping image files anywhere onto the browser window to open reverse search
+        window.addEventListener('dragover', (e) => {
+            if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('drop', (e) => {
+            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                const file = e.dataTransfer.files[0];
+                if (file.type && file.type.startsWith('image/')) {
+                    e.preventDefault();
+                    togglePanel('image-panel');
+                    setReverseImage(file);
+                    showAppToast("Image dropped! Ready for Reverse Search.", "info");
+                }
+            }
         });
 
         // Initialize Models
