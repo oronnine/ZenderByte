@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ZenderByte | AI Search</title>
-    <meta name="description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Incognito Web Access" />
+    <meta name="description" content="Search Interface with AI Models and Visual Search Access" />
     <meta property="og:title" content="ZenderByte | AI Search" />
-    <meta property="og:description" content="Next Gen Search Interface with Ollama Intelligence, Cloud Models, and Incognito Web Access" />
+    <meta property="og:description" content="Search Interface with AI Models and Visual Search Access" />
     <meta property="og:type" content="website" />
+
+    <!-- Site Favicon: Blue Circle in Rounded Gray Square (Site Logo) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='18' ry='18' fill='%23141414' stroke='%2338383a' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" />
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='2' y='2' width='60' height='60' rx='18' ry='18' fill='%23141414' stroke='%2338383a' stroke-width='2'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='%233b82f6' stroke-width='4'/%3E%3C/svg%3E" />
 
     <!-- Tailwind CSS v3 Play CDN (Universally compatible with iOS 14, iOS 15 Safari & modern browsers) -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -206,7 +210,7 @@
         </button>
 
         <!-- Reverse Image Search Toggle -->
-        <button data-panel-btn="image-panel" onclick="togglePanel('image-panel')" class="p-3 rounded-xl hover:bg-pink-600/20 transition-all text-pink-400" title="Google Reverse Image Search (Upload or Paste)">
+        <button data-panel-btn="image-panel" onclick="togglePanel('image-panel')" class="p-3 rounded-xl hover:bg-pink-600/20 transition-all text-pink-400" title="Reverse Image Search">
             <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -255,7 +259,7 @@
                        class="bg-transparent w-full px-3 sm:px-5 py-3 sm:py-4 outline-none text-base sm:text-lg min-w-0">
 
                 <!-- Reverse Image Search Button (Camera) -->
-                <button id="searchImageBtn" onclick="togglePanel('image-panel')" class="p-2.5 sm:p-3 text-gray-400 hover:text-pink-400 hover:bg-white/10 rounded-full transition-all shrink-0" title="Google Reverse Image Search (Paste or Upload)">
+                <button id="searchImageBtn" data-open-panel="image-panel" onclick="openPanel('image-panel')" class="p-2.5 sm:p-3 text-gray-400 hover:text-pink-400 hover:bg-white/10 rounded-full transition-all shrink-0 cursor-pointer" title="Reverse Image Search">
                     <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                         <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -291,24 +295,24 @@
     </main>
 
     <!-- AI PANEL (MULTI-ENGINE: OLLAMA / GEMINI / CLAUDE / CHATGPT) -->
-    <div id="ai-panel" class="panel glass p-6 sm:p-8 flex flex-col">
-        <div class="flex items-center justify-between mb-3">
+    <div id="ai-panel" class="panel glass p-5 sm:p-7 flex flex-col overflow-hidden">
+        <div class="flex items-center justify-between mb-3 shrink-0">
             <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 sm:gap-3">
                 <span id="aiActivePing" class="w-3 h-3 bg-blue-500 rounded-full animate-ping"></span>
                 <span id="aiHeaderTitle">Ollama Intelligence</span>
             </h2>
-            <button onclick="togglePanel('ai-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+            <button onclick="closePanel('ai-panel')" class="panel-close-btn w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Close Panel">✕</button>
         </div>
 
         <!-- Provider Status & Switcher Bar -->
-        <div class="flex items-center justify-between p-2.5 bg-white/5 border border-white/10 rounded-xl mb-4 text-xs">
+        <div class="flex items-center justify-between p-2.5 bg-white/5 border border-white/10 rounded-xl mb-3 text-xs shrink-0">
             <div class="flex items-center gap-2 min-w-0">
                 <span id="aiProviderEmoji" class="text-base shrink-0">🦙</span>
                 <span class="text-gray-400 shrink-0">Engine:</span>
                 <span id="aiProviderLabel" class="font-bold text-white truncate">Ollama</span>
                 <span id="aiProviderBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono shrink-0">11434</span>
             </div>
-            <button onclick="togglePanel('settings-panel')" class="shrink-0 ml-2 px-2.5 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 rounded-lg flex items-center gap-1 font-medium transition-all" title="Configure AI & Keys in Settings">
+            <button type="button" onclick="openPanel('settings-panel')" class="shrink-0 ml-2 px-2.5 py-1 bg-purple-600/30 hover:bg-purple-600/50 text-purple-200 border border-purple-500/30 rounded-lg flex items-center gap-1 font-medium transition-all" title="Configure AI & Keys in Settings">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -317,39 +321,44 @@
             </button>
         </div>
 
-        <div id="aiEngineOptionsContainer" class="space-y-4 mb-4">
-            <div id="ollamaSliderBox">
-                <div class="flex justify-between items-center mb-2">
-                    <label class="text-xs uppercase text-gray-400 font-bold">Available Models</label>
-                    <span class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">Local + Cloud</span>
+        <!-- SCROLLABLE CHAT CONTAINER: Models, Endpoints, Hints, and Chat Messages -->
+        <div id="chatBox" class="flex-grow overflow-y-auto space-y-4 mb-4 pr-1">
+            <!-- AI Engine & Model Controls (Inside scroll container so responses have maximum viewport space on mobile) -->
+            <div id="aiEngineOptionsContainer" class="space-y-3 p-3 bg-white/[0.04] border border-white/10 rounded-2xl">
+                <div id="ollamaSliderBox">
+                    <div class="flex justify-between items-center mb-2">
+                        <label class="text-xs uppercase text-gray-400 font-bold">Available Models</label>
+                        <span class="text-[10px] uppercase tracking-wider text-blue-400 font-semibold">Local + Cloud</span>
+                    </div>
+                    <input type="range" id="modelSlider" min="0" max="0" step="1" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
+                    <div id="modelNameDisplay" class="mt-2 text-center p-2 bg-white/5 rounded font-mono text-sm">Loading Models...</div>
                 </div>
-                <input type="range" id="modelSlider" min="0" max="0" step="1" class="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-blue-500">
-                <div id="modelNameDisplay" class="mt-2 text-center p-2 bg-white/5 rounded font-mono text-sm">Loading Models...</div>
-            </div>
 
-            <div id="ollamaEndpointBox">
-                <label class="text-xs uppercase text-gray-500 font-bold mb-2 block">Endpoint URL</label>
-                <input type="text" id="ollamaUrl" value="http://localhost:11434/api/generate" class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono">
-            </div>
-
-            <div id="cloudModelBox" class="hidden p-3 rounded-xl bg-white/5 border border-white/10 text-xs flex items-center justify-between">
-                <div>
-                    <span class="text-gray-400">Selected Model:</span>
-                    <span id="cloudModelName" class="font-bold text-white ml-1 font-mono">gemini-2.5-flash</span>
+                <div id="ollamaEndpointBox">
+                    <label class="text-xs uppercase text-gray-500 font-bold mb-1.5 block">Endpoint URL</label>
+                    <input type="text" id="ollamaUrl" value="http://localhost:11434/api/generate" class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono">
                 </div>
-                <button onclick="togglePanel('settings-panel')" class="text-blue-400 hover:underline">Change Model</button>
-            </div>
-        </div>
 
-        <div id="chatBox" class="flex-grow overflow-y-auto space-y-4 mb-4 pr-2">
+                <div id="cloudModelBox" class="hidden p-3 rounded-xl bg-white/5 border border-white/10 text-xs flex items-center justify-between">
+                    <div>
+                        <span class="text-gray-400">Selected Model:</span>
+                        <span id="cloudModelName" class="font-bold text-white ml-1 font-mono">gemini-2.5-flash</span>
+                    </div>
+                    <button type="button" onclick="openPanel('settings-panel')" class="text-blue-400 hover:underline">Change Model</button>
+                </div>
+            </div>
+
             <div id="ollamaHintBox" class="space-y-2">
                 <div class="text-sm text-gray-400 italic">System: Please ensure Ollama is running through the following command:</div>
                 <input type="text" id="ollamaCmd" value='set OLLAMA_ORIGINS="*" & ollama serve' class="w-full bg-black/50 border border-white/10 p-2 rounded text-xs font-mono" readonly>
             </div>
             <div class="text-xs text-blue-400/80 bg-blue-950/20 border border-blue-500/20 p-2.5 rounded-lg flex items-center gap-2">
                 <span>🌐</span>
-                <span><b>Incognito Web Access:</b> Real-time search, verified articles, and direct website navigation with zero referrer leakage.</span>
+                <span><b>Web Search:</b> Search web results, articles, and websites directly.</span>
             </div>
+
+            <!-- CHAT MESSAGES CONTAINER -->
+            <div id="chatMessagesList" class="space-y-4"></div>
         </div>
 
         <!-- Voice Status Banner in AI Panel -->
@@ -384,149 +393,114 @@
         </div>
     </div>
 
-    <!-- WHATSAPP PANEL (Workaround for Security) -->
+    <!-- WHATSAPP PANEL -->
     <div id="wa-panel" class="panel glass flex flex-col overflow-hidden">
-        <div class="p-4 border-b border-white/10 flex justify-between bg-green-900/20">
-            <span class="font-bold">WhatsApp Messenger</span>
-            <button onclick="togglePanel('wa-panel')">✕</button>
+        <div class="p-4 border-b border-white/10 flex items-center justify-between bg-green-900/20">
+            <span class="font-bold text-white">WhatsApp Messenger</span>
+            <button onclick="closePanel('wa-panel')" class="panel-close-btn w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Close Panel">✕</button>
         </div>
         <div class="flex-grow flex flex-col items-center justify-center p-6 sm:p-10 text-center">
-            <p id="wa-desc" class="text-sm text-gray-400 mb-6">Note: WhatsApp blocks loading inside other apps for security. Use the button below to open in a secure window.</p>
+            <p id="wa-desc" class="text-sm text-gray-400 mb-6">WhatsApp blocks loading inside embedded frames. Open in a new window or app below.</p>
             <a id="wa-btn" href="whatsapp://" target="_blank" rel="noopener noreferrer" class="bg-green-600 px-8 py-3 rounded-full font-bold hover:bg-green-500 transition-all">Launch WhatsApp Web</a>
         </div>
     </div>
 
     <!-- DISCORD PANEL -->
     <div id="dc-panel" class="panel glass flex flex-col overflow-hidden">
-        <div class="p-4 border-b border-white/10 flex justify-between bg-indigo-900/20">
-            <span class="font-bold">Discord</span>
-            <button onclick="togglePanel('dc-panel')">✕</button>
+        <div class="p-4 border-b border-white/10 flex items-center justify-between bg-indigo-900/20">
+            <span class="font-bold text-white">Discord</span>
+            <button onclick="closePanel('dc-panel')" class="panel-close-btn w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Close Panel">✕</button>
         </div>
         <div class="flex-grow flex flex-col items-center justify-center p-6 sm:p-10 text-center">
-            <p id="dc-desc" class="text-sm text-gray-400 mb-6">Open Discord Web safely in a new tab.</p>
+            <p id="dc-desc" class="text-sm text-gray-400 mb-6">Open Discord safely in a new tab or app.</p>
             <a id="dc-btn" href="discord://" target="_blank" rel="noopener noreferrer" class="bg-indigo-600 px-8 py-3 rounded-full font-bold hover:bg-indigo-500 transition-all">Launch Discord</a>
         </div>
     </div>
 
-    <!-- GOOGLE REVERSE IMAGE SEARCH PANEL (100% LOCAL & PRIVATE) -->
-    <div id="image-panel" class="panel glass p-6 sm:p-8 flex flex-col overflow-y-auto">
-        <div class="flex items-center justify-between mb-4 pb-3 border-b border-white/10 shrink-0">
-            <div>
-                <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
-                    <span class="p-2 rounded-xl bg-pink-500/20 text-pink-400">
-                        <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                    </span>
-                    <span>Reverse Image Search</span>
-                </h2>
-                <p class="text-xs text-gray-400 mt-1">Google Lens &amp; Visual Search by Image</p>
-            </div>
-            <button onclick="togglePanel('image-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
-        </div>
-
-        <!-- 100% Local Privacy Guarantee Notice -->
-        <div class="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-200 mb-4 flex items-start gap-2.5 shrink-0">
-            <span class="text-base shrink-0">🔒</span>
-            <div class="space-y-1">
-                <div class="font-bold text-emerald-300">100% Local &amp; Private — Zero Remote Uploads</div>
-                <div class="text-[11px] text-gray-300 leading-relaxed">Pasting and uploads are handled solely in your local browser memory. Files are never stored, sent to, or routed through any proxy or backend server. Google reverse search executes directly from your browser.</div>
-            </div>
-        </div>
-
-        <!-- Drop & Paste Zone (Visible when no image selected) -->
-        <div id="imageDropZone"
-             ondragover="onImageDragOver(event)"
-             ondragleave="onImageDragLeave(event)"
-             ondrop="onImageDrop(event)"
-             class="border-2 border-dashed border-white/20 hover:border-pink-500/60 rounded-2xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer transition-all bg-white/[0.02] hover:bg-pink-500/[0.04] mb-4">
-            
-            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 border border-pink-500/30 flex items-center justify-center mb-3 text-pink-400">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-            </div>
-
-            <div class="font-bold text-sm sm:text-base text-white mb-1">Paste an image or drag &amp; drop here</div>
-            <p class="text-xs text-gray-400 mb-4 max-w-xs">Copy any image on your PC or web, then press <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-pink-300 font-mono text-[11px]">Ctrl+V</kbd> or <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-pink-300 font-mono text-[11px]">Cmd+V</kbd></p>
-
-            <label class="px-5 py-2.5 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white font-semibold text-xs rounded-xl cursor-pointer shadow-lg transition-all flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                <span>Browse Image from PC</span>
-                <input type="file" id="reverseImageFileInput" accept="image/*" class="hidden" onchange="onReverseImageFileSelected(this.files)">
-            </label>
-        </div>
-
-        <!-- Image Preview Card (Visible when image is loaded) -->
-        <div id="imagePreviewContainer" class="hidden flex-col space-y-4 mb-4">
-            <div class="relative rounded-2xl overflow-hidden border border-white/20 bg-black/40 p-2 flex flex-col items-center">
-                <img id="imagePreviewImg" src="" alt="Selected image preview" draggable="true" class="max-h-60 w-auto rounded-xl object-contain shadow-2xl cursor-grab active:cursor-grabbing hover:scale-[1.01] transition-transform">
-                <div id="imagePreviewMeta" class="mt-2 text-xs text-gray-400 flex items-center gap-3 font-mono">
-                    <span id="imageMetaDimensions">-</span>
-                    <span>•</span>
-                    <span id="imageMetaSize">-</span>
-                    <span>•</span>
-                    <span id="imageMetaName" class="truncate max-w-[140px]">-</span>
+    <!-- REVERSE SEARCH PANEL -->
+    <div id="image-panel" class="panel glass p-6 sm:p-8 flex flex-col justify-between overflow-y-auto">
+        <div>
+            <div class="flex items-center justify-between mb-6 pb-4 border-b border-white/10 shrink-0">
+                <div>
+                    <h2 class="text-xl sm:text-2xl font-bold flex items-center gap-2.5 text-white">
+                        <span class="p-2 rounded-xl bg-pink-500/20 text-pink-400">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                        </span>
+                        <span>Reverse Search</span>
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-1">Direct access to visual search engines</p>
                 </div>
-                <button onclick="clearSelectedImage()" class="absolute top-3 right-3 p-1.5 rounded-lg bg-black/70 hover:bg-black text-gray-300 hover:text-white transition-all text-xs flex items-center gap-1" title="Remove image">
-                    <span>✕ Clear</span>
-                </button>
+                <button onclick="closePanel('image-panel')" class="panel-close-btn w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Close Panel">✕</button>
             </div>
 
-            <!-- Google Lens Search Step & Action -->
-            <div class="p-3 rounded-xl bg-blue-950/40 border border-blue-500/30 text-xs text-blue-200 space-y-1.5">
-                <div class="flex items-center gap-2 font-semibold text-blue-300">
-                    <span class="w-5 h-5 rounded-full bg-blue-500/20 flex items-center justify-center text-[10px] text-blue-300 border border-blue-400/30">1</span>
-                    <span>Search with Google Lens (100% Local &amp; Private)</span>
-                </div>
-                <p class="text-[11px] text-gray-300 leading-relaxed">
-                    Clicking below copies this image to your clipboard and opens official Google Lens in a new tab. Simply press <kbd class="px-1.5 py-0.5 rounded bg-white/10 text-white font-mono text-[10px]">Ctrl+V</kbd> (or tap paste) on Google Lens to search!
-                </p>
-            </div>
+            <!-- 3 Direct Visual Search Buttons -->
+            <div class="space-y-3">
+                <!-- Open Google Lens -->
+                <button type="button" onclick="openGoogleLens()" class="w-full p-4 rounded-2xl bg-white/5 hover:bg-blue-600/20 border border-white/10 hover:border-blue-500/40 text-left transition-all flex items-center justify-between group cursor-pointer shadow-lg">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 group-hover:scale-105 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="3.2"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 3H5a2 2 0 00-2 2v4m0 6v4a2 2 0 002 2h4m6 0h4a2 2 0 002-2v-4m0-6V5a2 2 0 00-2-2h-4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-base group-hover:text-blue-300 transition-colors">Open Google Lens</div>
+                            <div class="text-xs text-gray-400">lens.google.com</div>
+                        </div>
+                    </div>
+                    <span class="text-gray-400 group-hover:text-white transition-colors text-lg">↗</span>
+                </button>
 
-            <!-- Primary Google Lens Search Action Button -->
-            <button id="googleSearchActionBtn" onclick="executeGoogleReverseSearch()" class="w-full py-3.5 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-pink-600 hover:from-blue-500 hover:to-pink-500 text-white font-bold rounded-xl shadow-xl transition-all flex items-center justify-center gap-2.5 text-sm sm:text-base">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                <span>Search with Google Lens</span>
-            </button>
+                <!-- Open Yandex Images -->
+                <button type="button" onclick="openYandexImages()" class="w-full p-4 rounded-2xl bg-white/5 hover:bg-yellow-500/20 border border-white/10 hover:border-yellow-500/40 text-left transition-all flex items-center justify-between group cursor-pointer shadow-lg">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400 group-hover:scale-105 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 15l-5-5L5 21"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-base group-hover:text-yellow-300 transition-colors">Open Yandex Images</div>
+                            <div class="text-xs text-gray-400">yandex.com/images</div>
+                        </div>
+                    </div>
+                    <span class="text-gray-400 group-hover:text-white transition-colors text-lg">↗</span>
+                </button>
 
-            <!-- Quick Utility Actions: Copy Clipboard, Save, Bing, Yandex -->
-            <div class="grid grid-cols-2 gap-2 text-xs">
-                <button onclick="copyCurrentImageToClipboard(true)" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
-                    <span>📋 Copy Image</span>
-                </button>
-                <button onclick="downloadSelectedImage()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
-                    <span>⬇️ Save Image</span>
-                </button>
-                <button onclick="openBingVisualSearch()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
-                    <span>🖼️ Bing Visual</span>
-                </button>
-                <button onclick="openYandexVisualSearch()" class="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 font-medium text-gray-200 hover:text-white transition-all flex items-center justify-center gap-1.5">
-                    <span>🌐 Yandex Images</span>
+                <!-- Open Bing Visual -->
+                <button type="button" onclick="openBingVisual()" class="w-full p-4 rounded-2xl bg-white/5 hover:bg-sky-500/20 border border-white/10 hover:border-sky-500/40 text-left transition-all flex items-center justify-between group cursor-pointer shadow-lg">
+                    <div class="flex items-center gap-3.5">
+                        <div class="w-11 h-11 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:scale-105 transition-transform">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <div class="font-bold text-white text-base group-hover:text-sky-300 transition-colors">Open Bing Visual</div>
+                            <div class="text-xs text-gray-400">bing.com/visualsearch</div>
+                        </div>
+                    </div>
+                    <span class="text-gray-400 group-hover:text-white transition-colors text-lg">↗</span>
                 </button>
             </div>
         </div>
 
-        <!-- Quick Tips & Paste Status -->
-        <div class="mt-auto pt-4 border-t border-white/5 text-[11px] text-gray-400 space-y-1.5">
-            <div class="flex items-center gap-1.5 text-gray-300 font-semibold">
-                <svg class="w-3.5 h-3.5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <span>Quick Tip:</span>
-            </div>
-            <p>You can drag the preview image directly into Google Lens, or paste any copied image using <kbd class="px-1 py-0.5 rounded bg-white/10 font-mono text-[10px]">Ctrl+V</kbd> to launch Reverse Search instantly!</p>
+        <div class="pt-6 border-t border-white/10 text-xs text-gray-500 text-center">
+            Opens the visual search engine in a new tab.
         </div>
     </div>
 
     <!-- ADVANCED SEARCH PANEL -->
-    <div id="adv-panel" class="panel glass p-8 flex flex-col">
-        <div class="flex items-center justify-between mb-8">
-            <h2 class="text-2xl font-bold text-yellow-500">Search Filters</h2>
-            <button onclick="togglePanel('adv-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+    <div id="adv-panel" class="panel glass p-6 sm:p-8 flex flex-col overflow-y-auto">
+        <div class="flex items-center justify-between mb-6 pb-2 border-b border-white/10 shrink-0">
+            <h2 class="text-xl sm:text-2xl font-bold text-yellow-500">Search Filters</h2>
+            <button onclick="closePanel('adv-panel')" class="panel-close-btn w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Close Panel">✕</button>
         </div>
         <div class="space-y-6">
             <div class="space-y-2">
@@ -558,7 +532,7 @@
                 </h2>
                 <p class="text-xs text-gray-400 mt-1">Configure AI engine, ports &amp; API keys</p>
             </div>
-            <button onclick="togglePanel('settings-panel')" class="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all" title="Close Panel">✕</button>
+            <button onclick="closePanel('settings-panel')" class="panel-close-btn w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white flex items-center justify-center transition-all cursor-pointer" title="Close Panel">✕</button>
         </div>
 
         <div class="space-y-6 pb-12">
@@ -1165,58 +1139,177 @@
         // Initialize AI Settings on load
         AISettings.applyToUI();
 
-        // PANEL LOGIC
-        function togglePanel(panelId) {
-            const current = panelId ? document.getElementById(panelId) : null;
-            const wasActive = current ? current.classList.contains('active') : false;
+        // PANEL LOGIC: OPEN, CLOSE & TOGGLE
+        function closePanel(panelId) {
+            if (isAiVoiceActive) stopAiVoice(true);
+            if (isSearchVoiceActive) stopSearchVoice(true);
+            if (panelId) {
+                const target = document.getElementById(panelId);
+                if (target) target.classList.remove('active');
+                const btn = document.querySelector(`[data-panel-btn="${panelId}"]`);
+                if (btn) {
+                    btn.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50', 'ring-purple-500/50', 'ring-pink-500/50');
+                }
+            } else {
+                closeAllPanels();
+            }
+        }
 
-            // Close all panels
+        function closeAllPanels() {
+            if (isAiVoiceActive) stopAiVoice(true);
+            if (isSearchVoiceActive) stopSearchVoice(true);
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-            // Remove active style from all sidebar toggle buttons
+            document.querySelectorAll('[data-panel-btn]').forEach(b => {
+                b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50', 'ring-purple-500/50', 'ring-pink-500/50');
+            });
+        }
+
+        function openPanel(panelId) {
+            if (!panelId) return;
+            const target = document.getElementById(panelId);
+            if (!target) return;
+
+            // Stop speech recognition when opening a panel to prevent mic memory/battery leaks
+            if (panelId !== 'ai-panel' && isAiVoiceActive) stopAiVoice(true);
+            if (isSearchVoiceActive) stopSearchVoice(true);
+
+            // Close other panels
+            document.querySelectorAll('.panel').forEach(p => {
+                if (p !== target) p.classList.remove('active');
+            });
             document.querySelectorAll('[data-panel-btn]').forEach(b => {
                 b.classList.remove('bg-white/20', 'ring-2', 'ring-blue-500/50', 'ring-green-500/50', 'ring-indigo-500/50', 'ring-yellow-500/50', 'ring-purple-500/50', 'ring-pink-500/50');
             });
 
-            // If it wasn't active and target exists, open it
-            if (current && !wasActive) {
-                current.classList.add('active');
-                const btn = document.querySelector(`[data-panel-btn="${panelId}"]`);
-                if (btn) {
-                    btn.classList.add('bg-white/20', 'ring-2');
-                    if (panelId === 'ai-panel') btn.classList.add('ring-blue-500/50');
-                    else if (panelId === 'wa-panel') btn.classList.add('ring-green-500/50');
-                    else if (panelId === 'dc-panel') btn.classList.add('ring-indigo-500/50');
-                    else if (panelId === 'adv-panel') btn.classList.add('ring-yellow-500/50');
-                    else if (panelId === 'settings-panel') btn.classList.add('ring-purple-500/50');
-                    else if (panelId === 'image-panel') btn.classList.add('ring-pink-500/50');
-                }
+            target.classList.add('active');
+            const btn = document.querySelector(`[data-panel-btn="${panelId}"]`);
+            if (btn) {
+                btn.classList.add('bg-white/20', 'ring-2');
+                if (panelId === 'ai-panel') btn.classList.add('ring-blue-500/50');
+                else if (panelId === 'wa-panel') btn.classList.add('ring-green-500/50');
+                else if (panelId === 'dc-panel') btn.classList.add('ring-indigo-500/50');
+                else if (panelId === 'adv-panel') btn.classList.add('ring-yellow-500/50');
+                else if (panelId === 'settings-panel') btn.classList.add('ring-purple-500/50');
+                else if (panelId === 'image-panel') btn.classList.add('ring-pink-500/50');
+            }
+        }
+
+        function togglePanel(panelId) {
+            if (!panelId) {
+                closeAllPanels();
+                return;
+            }
+
+            const current = document.getElementById(panelId);
+            if (!current) return;
+            const wasActive = current.classList.contains('active');
+            if (wasActive) {
+                closePanel(panelId);
+            } else {
+                openPanel(panelId);
             }
         }
 
         // Close panel when pressing Escape
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
-                togglePanel(null);
+                closeAllPanels();
             }
         });
+
+        // UNIVERSAL PANEL TRIGGER HANDLER:
+        // Enables toggling from sidebar buttons and handles in-page triggers
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('button, a, [role="button"], [data-open-panel], [data-panel-btn]');
+            if (!trigger) return;
+
+            // 1. Panel Close Button (✕) — allow direct close execution without interception
+            const isCloseBtn = trigger.classList.contains('panel-close-btn') || 
+                               (trigger.innerText || trigger.textContent || '').trim() === '✕' || 
+                               trigger.getAttribute('title')?.includes('Close');
+            if (isCloseBtn) {
+                return;
+            }
+
+            // 2. Sidebar buttons with data-panel-btn: ALWAYS toggle on/off
+            const panelBtn = trigger.closest('[data-panel-btn]');
+            if (panelBtn) {
+                const targetId = panelBtn.getAttribute('data-panel-btn');
+                if (targetId) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    togglePanel(targetId);
+                    return;
+                }
+            }
+
+            // 3. Explicit data-open-panel attribute (e.g. search bar camera button): toggle
+            const explicitPanel = trigger.getAttribute('data-open-panel');
+            if (explicitPanel && document.getElementById(explicitPanel)) {
+                e.preventDefault();
+                e.stopPropagation();
+                togglePanel(explicitPanel);
+                return;
+            }
+
+            // 4. Secondary in-page triggers (e.g. "Configure in Settings" button inside AI bar)
+            const text = ((trigger.innerText || trigger.textContent || '') + ' ' + (trigger.getAttribute('title') || '')).trim().toLowerCase();
+
+            if ((text.includes('setting') || text.includes('open settings') || text.includes('configure in settings')) && !trigger.closest('#settings-panel')) {
+                e.preventDefault();
+                e.stopPropagation();
+                openPanel('settings-panel');
+                return;
+            }
+
+            if ((text.includes('reverse image') || text.includes('search by image') || text.includes('reverse search') || text.includes('visual search')) && !trigger.closest('#image-panel')) {
+                e.preventDefault();
+                e.stopPropagation();
+                openPanel('image-panel');
+                return;
+            }
+
+            if ((text.includes('advanced search') || text.includes('search filter') || text.includes('power search')) && !trigger.closest('#adv-panel')) {
+                e.preventDefault();
+                e.stopPropagation();
+                openPanel('adv-panel');
+                return;
+            }
+
+            if ((text.includes('ai assistant') || text.includes('ai chat') || text.includes('ask ai')) && !trigger.closest('#ai-panel')) {
+                e.preventDefault();
+                e.stopPropagation();
+                openPanel('ai-panel');
+                return;
+            }
+        }, true); // Capture phase ensures sidebar and trigger controls take precedence cleanly
 
         // Close panel when clicking outside of panel and sidebar
         document.addEventListener('click', (e) => {
-            const activePanel = document.querySelector('.panel.active');
-            if (!activePanel) return;
-            const sidebar = document.getElementById('sidebar-nav');
-            if (activePanel.contains(e.target) || (sidebar && sidebar.contains(e.target))) {
+            // Never close if clicking inside a panel, the sidebar, or any panel trigger
+            if (e.target.closest('.panel, #sidebar-nav, [data-panel-btn], [data-open-panel], #searchImageBtn')) {
                 return;
             }
-            togglePanel(null);
+            const activePanel = document.querySelector('.panel.active');
+            if (!activePanel) return;
+            closeAllPanels();
         });
 
-        // SECURE NEW TAB OPENER (Standard & Incognito)
+        // SECURE NEW TAB OPENER (Standard & Safe Protocols)
         function openInNewTab(url) {
             if (!url) return null;
-            const fullUrl = url.startsWith('http') || url.startsWith('//') ? url : `https://${url}`;
+            let safeUrl = String(url).trim();
+            // Disallow javascript: or data: pseudo-protocols for security
+            if (/^(?:javascript|data|vbscript):/i.test(safeUrl)) {
+                return null;
+            }
+            const fullUrl = safeUrl.startsWith('http://') || safeUrl.startsWith('https://') || safeUrl.startsWith('//') ? safeUrl : `https://${safeUrl}`;
             const win = window.open(fullUrl, '_blank', 'noopener,noreferrer');
             return win;
+        }
+
+        function openInIncognitoTab(url) {
+            return openInNewTab(url);
         }
 
         // SEARCH LOGIC (Always opens in a new tab)
@@ -1280,8 +1373,11 @@
             const host = (s.ollamaHost || 'http://localhost:11434').trim().replace(/\/+$/, '');
 
             try {
-                // Fetch local models if Ollama is running
-                const res = await fetch(`${host}/api/tags`);
+                // Fetch local models if Ollama is running with timeout to avoid hanging
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3500);
+                const res = await fetch(`${host}/api/tags`, { signal: controller.signal });
+                clearTimeout(timeoutId);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && Array.isArray(data.models)) {
@@ -1304,16 +1400,26 @@
             allModels = [...localModelsList, ...availableCloud];
 
             const slider = document.getElementById('modelSlider');
-            slider.min = 0;
-            slider.max = Math.max(0, allModels.length - 1);
-            slider.value = 0;
+            if (slider) {
+                slider.min = 0;
+                slider.max = Math.max(0, allModels.length - 1);
+                slider.value = 0;
+                slider.oninput = (e) => updateModelLabel(parseInt(e.target.value, 10), isLocalConnected);
+            }
 
             updateModelLabel(0, isLocalConnected);
-            slider.oninput = (e) => updateModelLabel(parseInt(e.target.value, 10), isLocalConnected);
         }
 
-        function updateModelLabel(index, isLocalConnected) {
-            const m = allModels[index];
+        function updateModelLabel(index, isLocalConnected = false) {
+            const display = document.getElementById('modelNameDisplay');
+            if (!display) return;
+            if (!allModels || allModels.length === 0) {
+                display.innerHTML = `<span class="text-xs text-gray-400">Loading Models...</span>`;
+                return;
+            }
+
+            const safeIndex = Math.max(0, Math.min(index, allModels.length - 1));
+            const m = allModels[safeIndex];
             if (!m) return;
 
             const isCloud = m.type === 'cloud';
@@ -1321,21 +1427,24 @@
                 ? `<span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold border border-blue-500/30">OLLAMA CLOUD</span>`
                 : `<span class="text-[10px] px-2 py-0.5 rounded bg-green-500/20 text-green-400 font-bold border border-green-500/30">LOCAL INSTALLED</span>`;
 
-            document.getElementById('modelNameDisplay').innerHTML = `
+            display.innerHTML = `
                     <div class="flex items-center justify-center gap-2">
                         ${badge}
-                        <span class="font-bold text-white text-sm">${m.name}</span>
+                        <span class="font-bold text-white text-sm">${escapeHtml(m.name)}</span>
                     </div>
-                    <div class="text-[11px] text-gray-400 mt-1">${m.desc} &bull; Model ${index + 1} of ${allModels.length}</div>
+                    <div class="text-[11px] text-gray-400 mt-1">${escapeHtml(m.desc)} &bull; Model ${safeIndex + 1} of ${allModels.length}</div>
                 `;
         }
 
-        // INCOGNITO WEB OPENER
-        function openInIncognitoTab(url) {
-            // Opens URL in a detached private new tab without referrer or window.opener leakage
-            const win = window.open(url, '_blank', 'noopener,noreferrer');
-            return win;
-        }
+        // Global event delegation for modelSlider so it never loses input handling
+        document.addEventListener('input', (e) => {
+            if (e.target && e.target.id === 'modelSlider') {
+                const val = parseInt(e.target.value, 10);
+                if (!isNaN(val)) {
+                    updateModelLabel(val);
+                }
+            }
+        });
 
         // Exact official YouTube sp filter parameter mappings
         const YOUTUBE_FILTER_CODES = {
@@ -1626,7 +1735,8 @@
                 // Ollama (Local)
                 const host = (settings.ollamaHost || 'http://localhost:11434').replace(/\/+$/, '');
                 const endpoint = (document.getElementById('ollamaUrl')?.value || `${host}/api/generate`).trim();
-                const selectedModelObj = allModels[document.getElementById('modelSlider')?.value];
+                const sliderVal = parseInt(document.getElementById('modelSlider')?.value || '0', 10);
+                const selectedModelObj = (allModels && allModels.length > sliderVal) ? allModels[sliderVal] : (allModels?.[0] || null);
                 const model = selectedModelObj?.name || 'llama3';
 
                 const res = await fetch(endpoint, {
@@ -1646,8 +1756,29 @@
             }
         }
 
+        // Global chat message appender (non-destructive insert into scrolling chat list)
+        function appendChatMessage(html) {
+            let list = document.getElementById('chatMessagesList');
+            const chatBox = document.getElementById('chatBox');
+            if (!list && chatBox) {
+                list = document.createElement('div');
+                list.id = 'chatMessagesList';
+                list.className = 'space-y-4';
+                chatBox.appendChild(list);
+            }
+            if (list) {
+                list.insertAdjacentHTML('beforeend', html);
+            } else if (chatBox) {
+                chatBox.insertAdjacentHTML('beforeend', html);
+            }
+            if (chatBox) {
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+        }
+
         function updateGeneratingIndicator(step, totalSteps, title, detail) {
             const chatBox = document.getElementById('chatBox');
+            const chatList = document.getElementById('chatMessagesList') || chatBox;
             const sendBtn = document.getElementById('aiSendBtn');
             if (sendBtn) {
                 sendBtn.disabled = true;
@@ -1668,7 +1799,7 @@
                 genDiv = document.createElement('div');
                 genDiv.id = 'aiGeneratingIndicator';
                 genDiv.className = 'border border-purple-500/30 bg-gradient-to-r from-purple-950/40 via-blue-950/30 to-black/50 p-3 rounded-xl text-xs space-y-1.5 transition-all shadow-lg';
-                chatBox.appendChild(genDiv);
+                if (chatList) chatList.appendChild(genDiv);
             }
 
             const stepBadge = step && totalSteps ? `<span class="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">${step}/${totalSteps}</span>` : '';
@@ -1727,7 +1858,7 @@
             return `<div ${dirAttr} class="space-y-1 text-xs sm:text-sm text-gray-200 leading-relaxed font-sans">${formatted}</div>`;
         }
 
-        // SILENT INCOGNITO WEB SEARCH ENGINE (Purely client-side, zero trace in user history, detached requests)
+        // Client-side web search engine
         async function silentIncognitoSearch(query) {
             const cleanQuery = query.trim();
             const results = [];
@@ -1914,7 +2045,9 @@
             return results;
         }
 
-        // SILENT INCOGNITO PAGE READER (Purely client-side, zero trace in history)
+        const searchWebSources = silentIncognitoSearch;
+
+        // Client-side web page reader
         async function silentFetchPage(url) {
             try {
                 if (!url) return null;
@@ -1988,25 +2121,25 @@
             const activeDisplayName = providerNames[currentProvider] || 'AI';
 
             try {
-                // Step 1: Silent Incognito Web Search
-                updateGeneratingIndicator(1, 3, `Searching silently: "${userText.slice(0, 30)}..."`, "Incognito research & fact discovery (history untouched)");
+                // Step 1: Web Search Discovery
+                updateGeneratingIndicator(1, 3, `Searching: "${userText.slice(0, 30)}..."`, "Gathering web findings and authentic references");
 
                 const searchResults = await silentIncognitoSearch(userText);
 
                 // If user asked to inspect a specific website or validate a URL
                 let customPageData = null;
                 if (customUrl) {
-                    updateGeneratingIndicator(2, 3, `Inspecting URL silently: ${customUrl.slice(0, 35)}...`, "Sanitizing and validating page contents in background");
+                    updateGeneratingIndicator(2, 3, `Reading URL: ${customUrl.slice(0, 35)}...`, "Validating and extracting page text");
                     customPageData = await silentFetchPage(customUrl);
                 }
 
-                // Step 2: Cognitive Thinking & Cross-Checking
-                updateGeneratingIndicator(2, 3, "Cognitive thinking & validation...", "Reasoning through intent, cultural context & verified facts");
+                // Step 2: Reasoning & Validation
+                updateGeneratingIndicator(2, 3, "Analyzing & validating context...", "Structuring verified findings and accurate details");
 
                 const todayIso = new Date().toISOString().split('T')[0];
                 let discoveredSchedule = null;
 
-                // Build rich grounding context from silent searches
+                // Build rich grounding context from searches
                 let groundingText = `AUTHENTIC DISCOVERED REAL-WORLD WEB DATA:\n`;
                 groundingText += `- User Inquiry: "${userText}"\n`;
                 groundingText += `- Real-World Date Today: ${todayIso} (Current Year: ${new Date().getFullYear()})\n`;
@@ -2105,7 +2238,7 @@ ${groundingText}
                                 <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 מקורות מאומתים &bull; Verified Sources (New Tab):
                             </span>
-                            <span class="text-[10px] text-gray-400 font-mono">Silent Incognito Search</span>
+                            <span class="text-[10px] text-gray-400 font-mono">Web Sources</span>
                         </div>
                         <div class="flex flex-wrap gap-1.5">
                             ${displaySources.map(s => `
@@ -2129,142 +2262,136 @@ ${groundingText}
                     </div>
                 `;
 
-                // Render main response in chat
-                chatBox.innerHTML += `
-                    <div class="bg-gradient-to-b from-slate-900/90 to-black/95 border border-purple-500/30 rounded-2xl p-4 space-y-3.5 shadow-2xl">
-                        <div class="flex items-center justify-between pb-2 border-b border-white/10">
-                            <div class="flex items-center gap-2">
-                                <span class="p-1 bg-purple-600/30 text-purple-300 rounded-md">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                                </span>
-                                <span class="font-bold text-white text-xs sm:text-sm">מחקר וסיכום אינטליגנטי &bull; ${escapeHtml(activeDisplayName)}</span>
-                            </div>
-                            <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">Autonomous Agent</span>
-                        </div>
-
-                        ${scheduleCardHtml}
-
-                        <!-- AI Synthesized Summary -->
-                        <div class="py-1">
-                            ${renderCleanMarkdown(aiSummary)}
-                        </div>
-
-                        ${sourcesHtml}
+        // Render main response in chat
+        appendChatMessage(`
+            <div class="bg-gradient-to-b from-slate-900/90 to-black/95 border border-purple-500/30 rounded-2xl p-4 space-y-3.5 shadow-2xl">
+                <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                    <div class="flex items-center gap-2">
+                        <span class="p-1 bg-purple-600/30 text-purple-300 rounded-md">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        </span>
+                        <span class="font-bold text-white text-xs sm:text-sm">מחקר וסיכום אינטליגנטי &bull; ${escapeHtml(activeDisplayName)}</span>
                     </div>
-                `;
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono">Agent</span>
+                </div>
 
-                chatBox.scrollTop = chatBox.scrollHeight;
+                ${scheduleCardHtml}
 
-            } catch (researchErr) {
-                hideGeneratingIndicator();
-                console.error("Research loop error:", researchErr);
+                <!-- AI Synthesized Summary -->
+                <div class="py-1">
+                    ${renderCleanMarkdown(aiSummary)}
+                </div>
 
-                if (researchErr && researchErr.isConfigError) {
-                    chatBox.innerHTML += `
-                        <div class="text-amber-300 text-xs bg-amber-950/30 border border-amber-500/30 p-3.5 rounded-xl space-y-2.5">
-                            <div class="flex items-center justify-between font-bold">
-                                <span class="flex items-center gap-1.5">
-                                    <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                                    ${escapeHtml(researchErr.provider)} Key Required
-                                </span>
-                                <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Setup Needed</span>
-                            </div>
-                            <div class="text-gray-200 text-xs">${escapeHtml(researchErr.message)}</div>
-                            <div class="pt-1 flex items-center gap-2">
-                                <button onclick="togglePanel('settings-panel')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
-                                    <span>Configure in Settings</span>
-                                </button>
-                                <button onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold transition-all">
-                                    <span>Switch to Ollama</span>
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    chatBox.innerHTML += `
-                        <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
-                            <div class="font-bold text-red-300">Research Error: ${escapeHtml(researchErr.message || 'Unknown issue')}</div>
-                            <div class="text-gray-300 text-xs">Could not complete live research. You can verify your connection in Settings or try again.</div>
-                            <button onclick="togglePanel('settings-panel')" class="text-purple-400 hover:underline text-xs">Open Settings</button>
-                        </div>
-                    `;
-                }
-                chatBox.scrollTop = chatBox.scrollHeight;
-            }
+                ${sourcesHtml}
+            </div>
+        `);
+
+    } catch (researchErr) {
+        hideGeneratingIndicator();
+        console.error("Research loop error:", researchErr);
+
+        if (researchErr && researchErr.isConfigError) {
+            appendChatMessage(`
+                <div class="text-amber-300 text-xs bg-amber-950/30 border border-amber-500/30 p-3.5 rounded-xl space-y-2.5">
+                    <div class="flex items-center justify-between font-bold">
+                        <span class="flex items-center gap-1.5">
+                            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            ${escapeHtml(researchErr.provider)} Key Required
+                        </span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">Setup Needed</span>
+                    </div>
+                    <div class="text-gray-200 text-xs">${escapeHtml(researchErr.message)}</div>
+                    <div class="pt-1 flex items-center gap-2">
+                        <button type="button" onclick="openPanel('settings-panel')" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-md">
+                            <span>Configure in Settings</span>
+                        </button>
+                        <button type="button" onclick="selectAIProvider('ollama')" class="px-3 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs font-semibold transition-all">
+                            <span>Switch to Ollama</span>
+                        </button>
+                    </div>
+                </div>
+            `);
+        } else {
+            appendChatMessage(`
+                <div class="text-red-400 text-xs bg-red-950/20 border border-red-500/20 p-3 rounded-xl space-y-2">
+                    <div class="font-bold text-red-300">Research Notice: ${escapeHtml(researchErr.message || 'Unable to complete research')}</div>
+                    <div class="text-gray-300 text-xs">Could not complete live research. You can verify your connection in Settings or try again.</div>
+                    <button type="button" onclick="openPanel('settings-panel')" class="text-purple-400 hover:underline text-xs">Open Settings</button>
+                </div>
+            `);
         }
+    }
+}
 
-        async function sendToOllama() {
-            const msgInput = document.getElementById('aiMsg');
-            const chatBox = document.getElementById('chatBox');
-            const currentSettings = AISettings.get();
-            const currentProvider = currentSettings.provider || 'ollama';
+async function sendToOllama() {
+    const msgInput = document.getElementById('aiMsg');
+    const currentSettings = AISettings.get();
 
-            if (!msgInput.value.trim()) return;
+    if (!msgInput || !msgInput.value.trim()) return;
 
-            const userText = msgInput.value.trim();
-            msgInput.value = "";
+    const userText = msgInput.value.trim();
+    msgInput.value = "";
 
-            // Render user message
-            chatBox.innerHTML += `<div class="bg-blue-600/20 p-3 rounded-lg text-sm"><b>You:</b> ${escapeHtml(userText)}</div>`;
-            chatBox.scrollTop = chatBox.scrollHeight;
+    // Render user message cleanly into list without resetting inputs or sliders
+    appendChatMessage(`<div class="bg-blue-600/20 p-3 rounded-lg text-sm"><b>You:</b> ${escapeHtml(userText)}</div>`);
 
-            // 1. Check if user typed a direct URL or domain (e.g. https://... or google.com)
-            const directNav = resolveSmartNavigation(userText);
-            if (directNav && directNav.type === 'direct') {
-                openInIncognitoTab(directNav.url);
-                const cleanDomain = new URL(directNav.url).hostname;
-                chatBox.innerHTML += `
-                        <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                    Website Opened
-                                </span>
-                                <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">noopener, noreferrer</span>
-                            </div>
-                            <div class="text-gray-200 text-xs">Directly opened website in an incognito private tab.</div>
-                            <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                <a href="${escapeHtml(directNav.url)}" target="_blank" rel="noopener noreferrer"
-                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
-                                    <span>Launch Website</span>
-                                </a>
-                                <a href="https://web.archive.org/web/*/${encodeURIComponent(cleanDomain)}" target="_blank" rel="noopener noreferrer"
-                                   class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
-                                    <span>Wayback Machine</span>
-                                </a>
-                                <span class="text-gray-400 text-[11px] font-mono truncate max-w-[200px]">${escapeHtml(directNav.url)}</span>
-                            </div>
-                        </div>
-                    `;
-                chatBox.scrollTop = chatBox.scrollHeight;
-                return;
-            }
+    // 1. Check if user typed a direct URL or domain (e.g. https://... or google.com)
+    const directNav = resolveSmartNavigation(userText);
+    if (directNav && directNav.type === 'direct') {
+        openInNewTab(directNav.url);
+        let cleanDomain = directNav.url;
+        try {
+            cleanDomain = new URL(directNav.url).hostname;
+        } catch (e) {}
+        appendChatMessage(`
+                <div class="bg-gradient-to-r from-blue-900/40 to-black/40 border border-blue-500/30 p-3.5 rounded-xl text-sm space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5 text-blue-400 font-bold text-xs uppercase tracking-wider">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                            Website Opened
+                        </span>
+                        <span class="text-[10px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono">Direct Tab</span>
+                    </div>
+                    <div class="text-gray-200 text-xs">Opened website in a new tab.</div>
+                    <div class="pt-1 flex items-center gap-2 flex-wrap">
+                        <a href="${escapeHtml(directNav.url)}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold transition-all">
+                            <span>Launch Website</span>
+                        </a>
+                        <a href="https://web.archive.org/web/*/${encodeURIComponent(cleanDomain)}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/50 border border-amber-500/30 hover:bg-amber-900/50 text-amber-300 rounded-lg text-xs transition-all">
+                            <span>Wayback Machine</span>
+                        </a>
+                        <span class="text-gray-400 text-[11px] font-mono truncate max-w-[200px]">${escapeHtml(directNav.url)}</span>
+                    </div>
+                </div>
+            `);
+        return;
+    }
 
-            // 2. Check if user explicitly wants to open a YouTube stream or video filter
-            const isExplicitYouTubeNav = /\b(watch|stream|livestream|youtube|yt\s+|shorts|playlist)\b/i.test(userText) &&
-                                        /\b(on\s+yt|on\s+youtube|youtube\.com|channel|live|shorts?)\b/i.test(userText);
+    // 2. Check if user explicitly wants to open a YouTube stream or video filter
+    const isExplicitYouTubeNav = /\b(watch|stream|livestream|youtube|yt\s+|shorts|playlist)\b/i.test(userText) &&
+                                /\b(on\s+yt|on\s+youtube|youtube\.com|channel|live|shorts?)\b/i.test(userText);
 
-            // 3. Check if user requested to read or summarize a specific URL
-            const urlMatch = userText.match(/https?:\/\/[^\s]+/i);
-            const isSummarizeUrlRequest = urlMatch && /\b(read|summarize|inspect|check|קרא|תסכם|סכם)\b/i.test(userText);
+    // 3. Check if user requested to read or summarize a specific URL
+    const urlMatch = userText.match(/https?:\/\/[^\s]+/i);
+    const isSummarizeUrlRequest = urlMatch && /\b(read|summarize|inspect|check|קרא|תסכם|סכם)\b/i.test(userText);
 
-            if (isSummarizeUrlRequest) {
-                // Execute research and summarize specifically for this URL
-                await performAIResearch(userText, currentSettings, urlMatch[0]);
-                return;
-            }
+    if (isSummarizeUrlRequest) {
+        await performAIResearch(userText, currentSettings, urlMatch[0]);
+        return;
+    }
 
-            // 4. If this is a question, informational query, research, or schedule (like "זמני היום בחולון"):
-            // Run our autonomous research agent so the AI does the thinking, searches, verifies, and summarizes!
-            if (!isExplicitYouTubeNav) {
-                await performAIResearch(userText, currentSettings);
-                return;
-            }
+    // 4. Autonomous research query
+    if (!isExplicitYouTubeNav) {
+        await performAIResearch(userText, currentSettings);
+        return;
+    }
 
-            // 5. Explicit YouTube smart filter routing
-            showGeneratingIndicator();
+    // 5. Explicit YouTube smart filter routing
+    showGeneratingIndicator();
 
-            const systemPrompt = `
+    const systemPrompt = `
 You are the intelligent navigation assistant for ZenderByte.
 You have FULL web navigation capabilities through ZenderByte.
 The user wants to navigate to a YouTube stream, video, shorts, or channel.
@@ -2273,74 +2400,72 @@ Output a JSON block:
 { "action": "open_url", "website": "youtube", "query": "<clean search terms>", "filter": "<live|shorts|playlist|channel|4k|movie|none>", "title": "<descriptive title>" }
 `;
 
+    try {
+        const rawResponse = await executeAIRequest(userText, systemPrompt, currentSettings);
+        hideGeneratingIndicator();
+
+        let actionData = null;
+        const jsonMatch = rawResponse.match(/\{[\s\S]*"action"\s*:\s*"[^"]+"[\s\S]*\}/);
+        if (jsonMatch) {
             try {
-                const rawResponse = await executeAIRequest(userText, systemPrompt, currentSettings);
-                hideGeneratingIndicator();
-
-                let actionData = null;
-                const jsonMatch = rawResponse.match(/\{[\s\S]*"action"\s*:\s*"[^"]+"[\s\S]*\}/);
-                if (jsonMatch) {
-                    try {
-                        actionData = JSON.parse(jsonMatch[0]);
-                    } catch (e) {
-                        console.warn("Could not parse JSON response", e);
-                    }
-                }
-
-                if (actionData && actionData.action === 'open_url') {
-                    const filterKey = (actionData.filter && actionData.filter !== 'none') ? actionData.filter.toLowerCase().trim() : null;
-                    const searchTerms = actionData.query || userText;
-                    const ytBuilt = buildYouTubeSearch(searchTerms, filterKey);
-                    const finalTargetUrl = ytBuilt.url;
-                    const filterBadge = ytBuilt.filterLabel;
-
-                    openInIncognitoTab(finalTargetUrl);
-
-                    const iconColor = filterKey === 'shorts' ? 'text-pink-400' : 'text-red-400';
-                    const badgeColor = filterKey === 'shorts' ? 'bg-pink-500/20 text-pink-300' : 'bg-red-500/20 text-red-300';
-                    const btnBg = filterKey === 'shorts' ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500' : 'bg-red-600 hover:bg-red-500';
-                    const filterTag = filterBadge ? `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 font-mono">${escapeHtml(filterBadge)}</span>` : '';
-
-                    chatBox.innerHTML += `
-                        <div class="bg-gradient-to-r from-red-950/40 via-blue-950/40 to-black/50 border border-red-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
-                            <div class="flex items-center justify-between">
-                                <span class="flex items-center gap-1.5 ${iconColor} font-bold text-xs uppercase tracking-wider">
-                                    <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                    YouTube &bull; Filter Activated
-                                </span>
-                                <div class="flex items-center gap-1.5">
-                                    ${filterTag}
-                                    <span class="text-[10px] px-2 py-0.5 rounded ${badgeColor} font-mono">AI Routed</span>
-                                </div>
-                            </div>
-                            <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(actionData.title || ytBuilt.cleanSearch)}</div>
-                            <div class="text-gray-300 text-xs">AI selected destination: <b>YouTube</b>${filterBadge ? ` with <b>${escapeHtml(filterBadge)}</b> filter` : ''}. Opened in private tab.</div>
-                            <div class="pt-1 flex items-center gap-2 flex-wrap">
-                                <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
-                                   class="inline-flex items-center gap-1.5 px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-semibold transition-all shadow-md">
-                                    <span>Open on YouTube</span>
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                                </a>
-                                ${ytBuilt.altLinks.map(link => `
-                                    <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer"
-                                       class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
-                                        <span>${escapeHtml(link.label)}</span>
-                                    </a>
-                                `).join('')}
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    // Fallback to research
-                    await performAIResearch(userText, currentSettings);
-                }
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } catch (err) {
-                hideGeneratingIndicator();
-                console.error("YouTube routing fallback to research:", err);
-                await performAIResearch(userText, currentSettings);
+                actionData = JSON.parse(jsonMatch[0]);
+            } catch (e) {
+                console.warn("Could not parse JSON response", e);
             }
         }
+
+        if (actionData && actionData.action === 'open_url') {
+            const filterKey = (actionData.filter && actionData.filter !== 'none') ? actionData.filter.toLowerCase().trim() : null;
+            const searchTerms = actionData.query || userText;
+            const ytBuilt = buildYouTubeSearch(searchTerms, filterKey);
+            const finalTargetUrl = ytBuilt.url;
+            const filterBadge = ytBuilt.filterLabel;
+
+            openInNewTab(finalTargetUrl);
+
+            const iconColor = filterKey === 'shorts' ? 'text-pink-400' : 'text-red-400';
+            const badgeColor = filterKey === 'shorts' ? 'bg-pink-500/20 text-pink-300' : 'bg-red-500/20 text-red-300';
+            const btnBg = filterKey === 'shorts' ? 'bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-500 hover:to-pink-500' : 'bg-red-600 hover:bg-red-500';
+            const filterTag = filterBadge ? `<span class="text-[10px] px-2 py-0.5 rounded bg-white/10 text-gray-200 font-mono">${escapeHtml(filterBadge)}</span>` : '';
+
+            appendChatMessage(`
+                <div class="bg-gradient-to-r from-red-950/40 via-blue-950/40 to-black/50 border border-red-500/30 p-3.5 rounded-xl text-sm space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="flex items-center gap-1.5 ${iconColor} font-bold text-xs uppercase tracking-wider">
+                            <svg class="w-4 h-4 animate-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                            YouTube &bull; Filter Activated
+                        </span>
+                        <div class="flex items-center gap-1.5">
+                            ${filterTag}
+                            <span class="text-[10px] px-2 py-0.5 rounded ${badgeColor} font-mono">Routed</span>
+                        </div>
+                    </div>
+                    <div class="text-gray-100 font-semibold text-xs leading-snug">${escapeHtml(actionData.title || ytBuilt.cleanSearch)}</div>
+                    <div class="text-gray-300 text-xs">Destination: <b>YouTube</b>${filterBadge ? ` with <b>${escapeHtml(filterBadge)}</b> filter` : ''}. Opened in a new tab.</div>
+                    <div class="pt-1 flex items-center gap-2 flex-wrap">
+                        <a href="${escapeHtml(finalTargetUrl)}" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center gap-1.5 px-3 py-1.5 ${btnBg} text-white rounded-lg text-xs font-semibold transition-all shadow-md">
+                            <span>Open on YouTube</span>
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                        </a>
+                        ${ytBuilt.altLinks.map(link => `
+                            <a href="${escapeHtml(link.url)}" target="_blank" rel="noopener noreferrer"
+                               class="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white/10 hover:bg-white/20 text-gray-300 rounded-lg text-xs transition-all">
+                                <span>${escapeHtml(link.label)}</span>
+                            </a>
+                        `).join('')}
+                    </div>
+                </div>
+            `);
+        } else {
+            await performAIResearch(userText, currentSettings);
+        }
+    } catch (err) {
+        hideGeneratingIndicator();
+        console.error("YouTube routing fallback to research:", err);
+        await performAIResearch(userText, currentSettings);
+    }
+}
 
         function escapeHtml(str) {
             if (!str) return '';
@@ -2408,7 +2533,11 @@ Output a JSON block:
                 return;
             }
 
-            // If AI voice is active, stop it
+            // Clear any lingering timer and cancel AI voice if active
+            if (searchVoiceAutoTimeout) {
+                clearTimeout(searchVoiceAutoTimeout);
+                searchVoiceAutoTimeout = null;
+            }
             if (isAiVoiceActive) stopAiVoice(true);
 
             try {
@@ -2451,7 +2580,7 @@ Output a JSON block:
                     }
 
                     const currentText = (finalTranscript || interimTranscript).trim();
-                    if (currentText) {
+                    if (currentText && mainInput) {
                         mainInput.value = currentText;
                         if (statusText) statusText.textContent = `Heard: "${currentText}"`;
                     }
@@ -2473,7 +2602,7 @@ Output a JSON block:
                     if (voiceIcon) voiceIcon.classList.remove('text-red-500', 'scale-110');
                     if (voiceBtn) voiceBtn.classList.remove('mic-recording');
 
-                    const text = mainInput.value.trim();
+                    const text = mainInput ? mainInput.value.trim() : '';
                     if (text) {
                         if (statusText) statusText.textContent = `Ready! Searching for "${text}"...`;
                         if (submitNowBtn) submitNowBtn.classList.remove('hidden');
@@ -2499,7 +2628,7 @@ Output a JSON block:
         }
 
         function stopSearchVoice(cancelSearch = false) {
-            if (searchVoiceAutoTimeout && cancelSearch) {
+            if (searchVoiceAutoTimeout) {
                 clearTimeout(searchVoiceAutoTimeout);
                 searchVoiceAutoTimeout = null;
             }
@@ -2611,13 +2740,13 @@ Output a JSON block:
                     if (voiceBtn) voiceBtn.classList.remove('mic-recording');
                     if (voiceStatus) voiceStatus.classList.add('hidden');
 
-                    const text = aiInput.value.trim();
+                    const text = aiInput ? aiInput.value.trim() : '';
                     const autoSend = autoSendCheckbox ? autoSendCheckbox.checked : true;
 
                     if (text && autoSend) {
                         showAppToast("Voice received! Sending to AI...", "info");
                         sendToOllama();
-                    } else if (text) {
+                    } else if (text && aiInput) {
                         aiInput.focus();
                     }
                 };
@@ -2649,244 +2778,46 @@ Output a JSON block:
         }
 
         // ==========================================
-        // REVERSE IMAGE SEARCH (100% LOCAL & PRIVATE)
+        // REVERSE SEARCH ENGINES
         // ==========================================
-        let currentImageFile = null;
-        let currentImagePreviewUrl = null;
-
-        function onReverseImageFileSelected(files) {
-            if (!files || !files.length) return;
-            setReverseImage(files[0]);
-        }
-
-        function onImageDragOver(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropZone = document.getElementById('imageDropZone');
-            if (dropZone) dropZone.classList.add('border-pink-500', 'bg-pink-500/10');
-        }
-
-        function onImageDragLeave(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropZone = document.getElementById('imageDropZone');
-            if (dropZone) dropZone.classList.remove('border-pink-500', 'bg-pink-500/10');
-        }
-
-        function onImageDrop(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dropZone = document.getElementById('imageDropZone');
-            if (dropZone) dropZone.classList.remove('border-pink-500', 'bg-pink-500/10');
-
-            if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
-                const file = e.dataTransfer.files[0];
-                if (file.type && file.type.startsWith('image/')) {
-                    setReverseImage(file);
-                } else {
-                    showAppToast("Please drop an image file (PNG, JPG, WEBP, GIF).", "warning");
-                }
-            }
-        }
-
-        function setReverseImage(file) {
-            if (!file) return;
-            currentImageFile = file;
-
-            // Release any existing local object URL to prevent memory leaks
-            if (currentImagePreviewUrl) {
-                try { URL.revokeObjectURL(currentImagePreviewUrl); } catch (e) {}
-            }
-            currentImagePreviewUrl = URL.createObjectURL(file);
-
-            const dropZone = document.getElementById('imageDropZone');
-            const previewContainer = document.getElementById('imagePreviewContainer');
-            const previewImg = document.getElementById('imagePreviewImg');
-            const metaDimensions = document.getElementById('imageMetaDimensions');
-            const metaSize = document.getElementById('imageMetaSize');
-            const metaName = document.getElementById('imageMetaName');
-
-            if (previewImg) previewImg.src = currentImagePreviewUrl;
-            if (dropZone) dropZone.classList.add('hidden');
-            if (previewContainer) {
-                previewContainer.classList.remove('hidden');
-                previewContainer.classList.add('flex');
-            }
-
-            if (metaName) metaName.textContent = file.name || 'Pasted Image';
-            if (metaSize) {
-                const kb = file.size / 1024;
-                metaSize.textContent = kb > 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${Math.round(kb)} KB`;
-            }
-
-            // Read natural dimensions
-            const imgObj = new Image();
-            imgObj.onload = () => {
-                if (metaDimensions) metaDimensions.textContent = `${imgObj.naturalWidth} × ${imgObj.naturalHeight}px`;
-            };
-            imgObj.src = currentImagePreviewUrl;
-
-            // Configure draggable preview for dragging directly into Google Lens
-            if (previewImg) {
-                previewImg.ondragstart = (e) => {
-                    if (currentImageFile && e.dataTransfer) {
-                        try {
-                            e.dataTransfer.setData('text/plain', currentImageFile.name || 'image.png');
-                            e.dataTransfer.items.add(currentImageFile);
-                        } catch (err) {}
-                    }
-                };
-            }
-        }
-
-        function clearSelectedImage() {
-            if (currentImagePreviewUrl) {
-                try { URL.revokeObjectURL(currentImagePreviewUrl); } catch (e) {}
-                currentImagePreviewUrl = null;
-            }
-            currentImageFile = null;
-
-            const fileInput = document.getElementById('reverseImageFileInput');
-            if (fileInput) fileInput.value = '';
-
-            const dropZone = document.getElementById('imageDropZone');
-            const previewContainer = document.getElementById('imagePreviewContainer');
-            if (dropZone) dropZone.classList.remove('hidden');
-            if (previewContainer) {
-                previewContainer.classList.add('hidden');
-                previewContainer.classList.remove('flex');
-            }
-        }
-
-        // Convert any image file (PNG, JPEG, WebP, GIF) to a PNG blob and copy to system clipboard
-        async function copyCurrentImageToClipboard(showNotification = true) {
-            if (!currentImageFile) {
-                showAppToast("Please upload or paste an image first.", "warning");
-                return false;
-            }
-
-            try {
-                let pngBlob = currentImageFile;
-                // Browsers standardly require image/png for ClipboardItem
-                if (currentImageFile.type !== 'image/png') {
-                    pngBlob = await new Promise((resolve, reject) => {
-                        const img = new Image();
-                        img.onload = () => {
-                            const canvas = document.createElement('canvas');
-                            canvas.width = img.naturalWidth || img.width;
-                            canvas.height = img.naturalHeight || img.height;
-                            const ctx = canvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            canvas.toBlob((b) => b ? resolve(b) : reject(new Error('Canvas conversion failed')), 'image/png');
-                        };
-                        img.onerror = () => reject(new Error('Image failed to load on canvas'));
-                        img.src = currentImagePreviewUrl || URL.createObjectURL(currentImageFile);
-                    });
-                }
-
-                if (navigator.clipboard && navigator.clipboard.write) {
-                    await navigator.clipboard.write([
-                        new ClipboardItem({ 'image/png': pngBlob })
-                    ]);
-                    if (showNotification) {
-                        showAppToast("Image copied to clipboard! (Ready to paste)", "success");
-                    }
-                    return true;
-                } else {
-                    if (showNotification) {
-                        showAppToast("Clipboard access unavailable. You can drag or download the image.", "warning");
-                    }
-                    return false;
-                }
-            } catch (err) {
-                console.warn("Clipboard copy warning:", err);
-                if (showNotification) {
-                    showAppToast("Could not copy automatically. You can drag or download the image.", "warning");
-                }
-                return false;
-            }
-        }
-
-        // Direct client-side Google Lens Reverse Search (Zero Remote Uploads)
-        async function executeGoogleReverseSearch() {
-            if (!currentImageFile) {
-                showAppToast("Please upload or paste an image first.", "warning");
-                return;
-            }
-
-            // Copy to clipboard first so the user can immediately paste it into Google Lens
-            const copied = await copyCurrentImageToClipboard(false);
-
-            // Open official Google Lens in a new tab
+        function openGoogleLens() {
             window.open('https://lens.google.com/', '_blank', 'noopener,noreferrer');
-
-            if (copied) {
-                showAppToast("Copied! Press Ctrl+V (or tap paste) on Google Lens", "success");
-            } else {
-                showAppToast("Google Lens opened! Drag your image or paste it to search", "info");
-            }
         }
 
-        function openGoogleLensDirect() {
-            executeGoogleReverseSearch();
+        function openYandexImages() {
+            window.open('https://yandex.com/images/', '_blank', 'noopener,noreferrer');
         }
 
-        async function openBingVisualSearch() {
-            if (currentImageFile) {
-                await copyCurrentImageToClipboard(false);
-            }
+        function openBingVisual() {
             window.open('https://www.bing.com/visualsearch', '_blank', 'noopener,noreferrer');
-            if (currentImageFile) {
-                showAppToast("Bing Visual opened! Press Ctrl+V to paste your image", "success");
-            }
         }
 
-        async function openYandexVisualSearch() {
-            if (currentImageFile) {
-                await copyCurrentImageToClipboard(false);
-            }
-            window.open('https://yandex.com/images/search', '_blank', 'noopener,noreferrer');
-            if (currentImageFile) {
-                showAppToast("Yandex Images opened! Press Ctrl+V to paste your image", "success");
-            }
+        // Backward-compatible function aliases
+        function executeGoogleReverseSearch() { openGoogleLens(); }
+        function openGoogleLensDirect() { openGoogleLens(); }
+        function openBingVisualSearch() { openBingVisual(); }
+        function openYandexVisualSearch() { openYandexImages(); }
+        function openLensZeroUpload() { openGoogleLens(); }
+        function performVisualSearch(engine = 'google') {
+            if (engine === 'yandex') openYandexImages();
+            else if (engine === 'bing') openBingVisual();
+            else openGoogleLens();
         }
 
-        function downloadSelectedImage() {
-            if (!currentImageFile || !currentImagePreviewUrl) {
-                showAppToast("No image to download.", "warning");
-                return;
-            }
-            const a = document.createElement('a');
-            a.href = currentImagePreviewUrl;
-            a.download = currentImageFile.name || 'zenderbyte-image.png';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            showAppToast("Image downloaded to your device.", "success");
-        }
-
-        // ==========================================
-        // GLOBAL CLIPBOARD PASTE & DRAG-AND-DROP
-        // ==========================================
+        // Open reverse search panel when an image is pasted or dropped
         window.addEventListener('paste', (e) => {
             const items = (e.clipboardData || e.originalEvent?.clipboardData)?.items;
             if (!items) return;
 
             for (let i = 0; i < items.length; i++) {
                 if (items[i].type && items[i].type.indexOf('image') !== -1) {
-                    const blob = items[i].getAsFile();
-                    if (blob) {
-                        e.preventDefault();
-                        togglePanel('image-panel');
-                        setReverseImage(blob);
-                        showAppToast("Image pasted! Ready for Reverse Search.", "info");
-                        return;
-                    }
+                    e.preventDefault();
+                    openPanel('image-panel');
+                    return;
                 }
             }
         });
 
-        // Allow dropping image files anywhere onto the browser window to open reverse search
         window.addEventListener('dragover', (e) => {
             if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes('Files')) {
                 e.preventDefault();
@@ -2898,9 +2829,7 @@ Output a JSON block:
                 const file = e.dataTransfer.files[0];
                 if (file.type && file.type.startsWith('image/')) {
                     e.preventDefault();
-                    togglePanel('image-panel');
-                    setReverseImage(file);
-                    showAppToast("Image dropped! Ready for Reverse Search.", "info");
+                    openPanel('image-panel');
                 }
             }
         });
